@@ -5,8 +5,8 @@ file(GLOB_RECURSE SOURCE_FILES
 source_group (TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SOURCE_FILES})
 add_executable(OakumUnitTests ${SOURCE_FILES})
 
-set(BUILD_GMOCK OFF)
-set(INSTALL_GTEST OFF)
+set(BUILD_GMOCK OFF CACHE BOOL "" FORCE)
+set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
 DependencyManager_create_dependency(
     googletest
     BUILD_METHOD "in_project"
