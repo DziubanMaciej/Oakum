@@ -27,7 +27,6 @@ set(DEPENDENCY_MANAGER_FILE ${CMAKE_CURRENT_LIST_FILE})
 function(_DependencyManager_get_targets_in_directory OUT_VAR DIRECTORY)
     get_directory_property(children DIRECTORY ${DIRECTORY} SUBDIRECTORIES)
     set(TARGETS)
-
     foreach(DIR ${DIRECTORY} ${children})
         if(NOT IS_DIRECTORY ${DIR})
             continue()
@@ -108,7 +107,7 @@ endfunction()
 function(_DependencyManager_setup_dependency_imported_target DEPENDENCY_NAME)
     # Parse arguments
     set(SINGLE_VALUE_ARGS TARGET TYPE)
-    set(MULTI_VALUE_ARGS INCLUDE_DIRECTORIES LINK_LIBRARIES IMPORTED_IMPLIB IMPORTED_LOCATION)
+    set(MULTI_VALUE_ARGS INCLUDE_DIRECTORIES LINK_DIRECTORIES LINK_LIBRARIES IMPORTED_IMPLIB IMPORTED_LOCATION)
     cmake_parse_arguments(ARG "" "${SINGLE_VALUE_ARGS}" "${MULTI_VALUE_ARGS}" ${ARGN})
 
     # Get target name
@@ -131,6 +130,9 @@ function(_DependencyManager_setup_dependency_imported_target DEPENDENCY_NAME)
     if (DEFINED ARG_INCLUDE_DIRECTORIES)
         target_include_directories(${FULL_DEPENDENCY_TARGET_NAME} INTERFACE ${ARG_INCLUDE_DIRECTORIES})
     endif()
+    if (DEFINED ARG_LINK_DIRECTORIES)
+        target_link_directories(${FULL_DEPENDENCY_TARGET_NAME} INTERFACE ${ARG_LINK_DIRECTORIES})
+    endif()
     if (DEFINED ARG_LINK_LIBRARIES)
         target_link_libraries(${FULL_DEPENDENCY_TARGET_NAME} INTERFACE ${ARG_LINK_LIBRARIES})
     endif()
@@ -149,7 +151,7 @@ function (_DependencyManager_generate_target_infos OUTPUT_FILE TARGETS)
         set(TARGET_INFO "TARGET ${TGT}")
         string(APPEND TARGET_INFO " TYPE ${TARGET_TYPE}")
         string(APPEND TARGET_INFO " INCLUDE_DIRECTORIES $<TARGET_PROPERTY:${TGT},INCLUDE_DIRECTORIES>")
-        string(APPEND TARGET_INFO " INCLUDE_DIRECTORIES $<TARGET_PROPERTY:${TGT},INCLUDE_DIRECTORIES>")
+        string(APPEND TARGET_INFO " LINK_DIRECTORIES $<TARGET_PROPERTY:${TGT},LINK_DIRECTORIES>")
         string(APPEND TARGET_INFO " LINK_LIBRARIES $<TARGET_PROPERTY:${TGT},LINK_LIBRARIES>")
         if (NOT TARGET_TYPE STREQUAL "EXECUTABLE")
             string(APPEND TARGET_INFO " IMPORTED_IMPLIB $<TARGET_LINKER_FILE:${TGT}>")
@@ -187,6 +189,7 @@ function (_DependencyManager_setup_out_of_project_dependency DEPENDENCY_NAME DEP
     get_property(SOURCE_DIR GLOBAL PROPERTY DEPENDENCY_MANAGER_DEPENDENCY_${DEPENDENCY_NAME}_DIRECTORY)
     get_property(ALL_BUILD_TYPES GLOBAL PROPERTY DEPENDENCY_MANAGER_DEPENDENCY_${DEPENDENCY_NAME}_ALL_BUILD_TYPES)
     get_property(SELECTED_BUILD_TYPE GLOBAL PROPERTY DEPENDENCY_MANAGER_DEPENDENCY_${DEPENDENCY_NAME}_SELECTED_BUILD_TYPE)
+    get_property(CMAKE_ARGS GLOBAL PROPERTY DEPENDENCY_MANAGER_DEPENDENCY_${DEPENDENCY_NAME}_CMAKE_ARGS)
 
     # Create CMakeLists.txt for the dependency, which will call the actual CMake file of the
     # dependency and intercept all targets created by it
@@ -207,21 +210,19 @@ function (_DependencyManager_setup_out_of_project_dependency DEPENDENCY_NAME DEP
 
     # Run the created CMakeLists file
     set(LOG_FILE ${DEPENDENCY_DIR}/log_cmake.txt)
-    execute_process(COMMAND cmake -DCMAKE_BUILD_TYPES=${ALL_BUILD_TYPES} ..
+    execute_process(COMMAND cmake "-DCMAKE_CONFIGURATION_TYPES=${ALL_BUILD_TYPES}" ..
             WORKING_DIRECTORY ${BUILD_DIR}
             RESULT_VARIABLE RESULT
             OUTPUT_FILE ${LOG_FILE}
             ERROR_FILE ${LOG_FILE})
     if (NOT ${RESULT} STREQUAL 0)
-        message("BUILD_DIR = ${BUILD_DIR}")
         message(FATAL_ERROR "CMake script for dependency ${DEPENDENCY_NAME} failed with error code ${RESULT}. Please inspect log in ${LOG_FILE}")
     endif()
 
     # Compile all targets in all required configurations
     _DependencyManager_get_core_count(CORE_COUNT)
     foreach(BUILD_TYPE ${ALL_BUILD_TYPES})
-        file(READ ${DEPENDENCY_DIR}/targets${BUILD_TYPE}.txt TARGET_INFOS)
-        string(REPLACE "\n" ";" TARGET_INFOS ${TARGET_INFOS})
+        file(STRINGS ${DEPENDENCY_DIR}/targets${BUILD_TYPE}.txt TARGET_INFOS)
         foreach(TARGET_INFO ${TARGET_INFOS})
             # Retrieve target name
             set(TGT ${TARGET_INFO})
@@ -240,7 +241,8 @@ function (_DependencyManager_setup_out_of_project_dependency DEPENDENCY_NAME DEP
             endif()
 
             # Create imported target if needed
-            string(REPLACE " " ";" TARGET_INFO_UNPACKED ${TARGET_INFO}) # string->list conversion
+            string(REPLACE ";" "\;" TARGET_INFO_UNPACKED "${TARGET_INFO}") # escape semicolons
+            string(REPLACE " " ";" TARGET_INFO_UNPACKED "${TARGET_INFO_UNPACKED}") # string->list conversion
             if(BUILD_TYPE STREQUAL SELECTED_BUILD_TYPE)
                 _DependencyManager_setup_dependency_imported_target(${DEPENDENCY_NAME} ${TARGET_INFO_UNPACKED})
             endif()
@@ -266,7 +268,7 @@ endfunction()
 function(DependencyManager_create_dependency DEPENDENCY_NAME)
     # Parse arguments
     set(OPTIONS_ARGS     IS_SUBMODULE)
-    set(ONE_VALUE_ARGS   BUILD_METHOD DIRECTORY SELECTED_BUILD_TYPE)
+    set(ONE_VALUE_ARGS   BUILD_METHOD DIRECTORY SELECTED_BUILD_TYPE CMAKE_ARGS)
     set(MULTI_VALUE_ARGS ALL_BUILD_TYPES)
     cmake_parse_arguments(ARG "${OPTIONS_ARGS}" "${ONE_VALUE_ARGS}" "${MULTI_VALUE_ARGS}" ${ARGN})
 
@@ -276,12 +278,14 @@ function(DependencyManager_create_dependency DEPENDENCY_NAME)
     set_property(GLOBAL PROPERTY DEPENDENCY_MANAGER_DEPENDENCY_${DEPENDENCY_NAME}_DIRECTORY "")
     set_property(GLOBAL PROPERTY DEPENDENCY_MANAGER_DEPENDENCY_${DEPENDENCY_NAME}_ALL_BUILD_TYPES "")
     set_property(GLOBAL PROPERTY DEPENDENCY_MANAGER_DEPENDENCY_${DEPENDENCY_NAME}_SELECTED_BUILD_TYPE "")
+    set_property(GLOBAL PROPERTY DEPENDENCY_MANAGER_DEPENDENCY_${DEPENDENCY_NAME}_CMAKE_ARGS "")
     set_property(GLOBAL APPEND PROPERTY DEPENDENCY_MANAGER_DEPENDENCIES ${DEPENDENCY_NAME})
 
     # Fill dependency data, which was passed by the user
     _DependencyManager_require_valid_value("${ARG_IS_SUBMODULE}" "TRUE;FALSE" "IS_SUBMODULE")
     set_property(GLOBAL PROPERTY DEPENDENCY_MANAGER_DEPENDENCY_${DEPENDENCY_NAME}_IS_SUBMODULE "${ARG_IS_SUBMODULE}")
 
+    string(TOLOWER "${ARG_BUILD_METHOD}" ARG_BUILD_METHOD)
     _DependencyManager_require_valid_value("${ARG_BUILD_METHOD}" "in_project;out_of_project;binary" "BUILD_METHOD")
     set_property(GLOBAL PROPERTY DEPENDENCY_MANAGER_DEPENDENCY_${DEPENDENCY_NAME}_BUILD_METHOD "${ARG_BUILD_METHOD}")
 
@@ -302,6 +306,8 @@ function(DependencyManager_create_dependency DEPENDENCY_NAME)
 
         _DependencyManager_require_valid_value("${ARG_SELECTED_BUILD_TYPE}" "${ARG_ALL_BUILD_TYPES}" "SELECTED_BUILD_TYPE")
         set_property(GLOBAL PROPERTY DEPENDENCY_MANAGER_DEPENDENCY_${DEPENDENCY_NAME}_SELECTED_BUILD_TYPE "${ARG_SELECTED_BUILD_TYPE}")
+
+        set_property(GLOBAL PROPERTY DEPENDENCY_MANAGER_DEPENDENCY_${DEPENDENCY_NAME}_CMAKE_ARGS "${ARG_CMAKE_ARGS}")
 
         set(DEPENDENCY_DIR ${CMAKE_BINARY_DIR}/CMakeDependencyManager/${DEPENDENCY_NAME})
         message(STATUS "Dependency ${DEPENDENCY_NAME} is an out-of-project dependency. It will be built outside current project in ${DEPENDENCY_DIR}")
