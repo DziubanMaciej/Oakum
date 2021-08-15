@@ -22,6 +22,8 @@ public:
     void getAllocations(OakumAllocation *outAllocations, size_t allocationsCount, size_t &outAllocationsReturned, size_t &outAllocationsAvailable);
     bool hasAllocations();
 
+    bool getStackTrace(OakumAllocation &allocation);
+
     void incrementIgnoreRefcount();
     bool decrementIgnoreRefcount();
 

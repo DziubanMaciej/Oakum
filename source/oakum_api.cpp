@@ -39,6 +39,16 @@ OakumResult oakumGetAllocations(OakumAllocation *outAllocations, size_t allocati
     return OAKUM_SUCCESS;
 }
 
+OakumResult oakumGetStackTrace(OakumAllocation *allocation) {
+    OAKUM_VERIFY_INITIALIZATION(true, OAKUM_UNINITIALIZED);
+    OAKUM_VERIFY_NON_NULL(allocation);
+
+    if (!Oakum::OakumController::getInstance()->getStackTrace(*allocation)) {
+        return OAKUM_CANNOT_GET_STACK_TRACE;
+    }
+    return OAKUM_SUCCESS;
+}
+
 OakumResult oakumStartIgnore() {
     OAKUM_VERIFY_INITIALIZATION(true, OAKUM_UNINITIALIZED);
 

@@ -1,6 +1,20 @@
 #include "api/fixtures.h"
 
-using OakumGetAllocationsTest = OakumTest;
+struct OakumGetAllocationsTest : OakumTest {
+    void validateStackFrames(OakumAllocation &allocation) {
+        EXPECT_NE(nullptr, allocation.stackFrames);
+        EXPECT_GE(allocation.stackFramesCount, 0u);
+
+        const auto isNullChar = [](char c) { return c == '\0'; };
+        for (size_t stackFrameIndex = 0; stackFrameIndex < allocation.stackFramesCount; stackFrameIndex++) {
+            const OakumStackFrame &frame = allocation.stackFrames[stackFrameIndex];
+            EXPECT_NE(nullptr, frame.address);
+            EXPECT_TRUE(std::all_of(frame.symbolName, frame.symbolName + sizeof(frame.symbolName), isNullChar));
+            EXPECT_TRUE(std::all_of(frame.fileName, frame.fileName + sizeof(frame.fileName), isNullChar));
+            EXPECT_EQ(0u, frame.fileLine);
+        }
+    }
+};
 
 TEST_F(OakumGetAllocationsTest, givenOakumNotInitializedWhenCallingOakumGetAllocationsThenFail) {
     size_t returned{};
@@ -53,16 +67,19 @@ TEST_F(OakumGetAllocationsTest, givenSomeAllocationsWhenCallingOakumGetAllocatio
     EXPECT_EQ(sizeof(char), allocations[0].size);
     EXPECT_EQ(a, allocations[0].pointer);
     EXPECT_FALSE(allocations[0].noThrow);
+    validateStackFrames(allocations[0]);
 
     EXPECT_EQ(1u, allocations[1].allocationId);
     EXPECT_EQ(sizeof(int), allocations[1].size);
     EXPECT_EQ(b, allocations[1].pointer);
     EXPECT_FALSE(allocations[1].noThrow);
+    validateStackFrames(allocations[1]);
 
     EXPECT_EQ(2u, allocations[2].allocationId);
     EXPECT_EQ(12 * sizeof(int), allocations[2].size);
     EXPECT_EQ(c, allocations[2].pointer);
     EXPECT_FALSE(allocations[2].noThrow);
+    validateStackFrames(allocations[2]);
 
     delete a;
     delete b;
@@ -90,16 +107,19 @@ TEST_F(OakumGetAllocationsTest, givenSomeNoThrowAllocationsWhenCallingOakumGetAl
     EXPECT_EQ(sizeof(char), allocations[0].size);
     EXPECT_EQ(a, allocations[0].pointer);
     EXPECT_TRUE(allocations[0].noThrow);
+    validateStackFrames(allocations[0]);
 
     EXPECT_EQ(1u, allocations[1].allocationId);
     EXPECT_EQ(sizeof(int), allocations[1].size);
     EXPECT_EQ(b, allocations[1].pointer);
     EXPECT_TRUE(allocations[1].noThrow);
+    validateStackFrames(allocations[1]);
 
     EXPECT_EQ(2u, allocations[2].allocationId);
     EXPECT_EQ(12 * sizeof(int), allocations[2].size);
     EXPECT_EQ(c, allocations[2].pointer);
     EXPECT_TRUE(allocations[2].noThrow);
+    validateStackFrames(allocations[2]);
 
     delete a;
     delete b;

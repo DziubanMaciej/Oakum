@@ -1,5 +1,6 @@
 #include "error.h"
 #include "oakum.h"
+#include "stack_trace.h"
 
 struct RaiiOakumIgnore {
     RaiiOakumIgnore() {
@@ -35,6 +36,8 @@ void *OakumController::allocateMemory(std::size_t size, bool noThrow) {
     info.size = size;
     info.pointer = ::malloc(size);
     info.noThrow = noThrow;
+    info.stackFrames = nullptr;
+    info.stackFramesCount = 0;
 
     const bool success = info.pointer != nullptr;
     if (isInitialized() && success && !getInstance()->getIgnoreState()) {
@@ -65,8 +68,8 @@ void OakumController::deallocateMemory(void *pointer) {
 void OakumController::OakumController::registerAllocation(OakumAllocation info) {
     RaiiOakumIgnore raiiIgnore{};
 
-    FATAL_ERROR_IF(info.allocationId != 0, "allocationId should not be set");
     info.allocationId = this->allocationIdCounter++;
+    StackTraceHelper::captureFrames(info.stackFrames, info.stackFramesCount);
 
     std::lock_guard lock{this->allocationsLock};
     FATAL_ERROR_IF(this->allocations.find(info.pointer) != this->allocations.end(), "Pointer already registered");
@@ -104,6 +107,13 @@ void OakumController::getAllocations(OakumAllocation *outAllocations, size_t all
 bool OakumController::hasAllocations() {
     std::lock_guard lock{this->allocationsLock};
     return this->allocations.size();
+}
+
+bool OakumController::getStackTrace(OakumAllocation &allocation) {
+    if (allocation.stackFramesCount != 0) {
+        return StackTraceHelper::resolveFrames(allocation.stackFrames, allocation.stackFramesCount);
+    }
+    return true;
 }
 
 void OakumController::incrementIgnoreRefcount() {
