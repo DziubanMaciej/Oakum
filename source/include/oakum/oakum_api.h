@@ -41,6 +41,8 @@ enum OakumResult {
 OakumResult oakumInit(const OakumInitArgs *args);
 OakumResult oakumDeinit(bool requireNoLeaks);
 
+OakumResult oakumDetectLeaks();
+
 OakumResult oakumGetAllocations(OakumAllocation **outAllocations, size_t *outAllocationsCount);
 OakumResult oakumReleaseAllocations(OakumAllocation *allocations, size_t allocationsCount);
 

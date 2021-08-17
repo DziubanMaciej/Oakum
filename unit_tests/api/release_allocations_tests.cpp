@@ -31,7 +31,5 @@ TEST_F(OakumReleaseAllocationsTest, givenAllocationWhenCallingOakumReleaseAlloca
     EXPECT_EQ(OAKUM_LEAKS_DETECTED, oakumDeinit(true));
 
     EXPECT_OAKUM_SUCCESS(oakumReleaseAllocations(allocations, allocationCount));
-    EXPECT_OAKUM_SUCCESS(oakumDeinit(true));
-
-    EXPECT_OAKUM_SUCCESS(oakumInit(nullptr));
+    EXPECT_OAKUM_SUCCESS(oakumDetectLeaks());
 }

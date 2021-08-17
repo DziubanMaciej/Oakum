@@ -28,6 +28,16 @@ OakumResult oakumDeinit(bool requireNoLeaks) {
     return OAKUM_SUCCESS;
 }
 
+OakumResult oakumDetectLeaks() {
+    OAKUM_VERIFY_INITIALIZATION(true, OAKUM_UNINITIALIZED);
+
+    if (Oakum::OakumController::getInstance()->hasAllocations()) {
+        return OAKUM_LEAKS_DETECTED;
+    }
+
+    return OAKUM_SUCCESS;
+}
+
 OakumResult oakumGetAllocations(OakumAllocation **outAllocations, size_t *outAllocationsCount) {
     OAKUM_VERIFY_INITIALIZATION(true, OAKUM_UNINITIALIZED);
     OAKUM_VERIFY_NON_NULL(outAllocations);
