@@ -47,13 +47,14 @@ OakumResult oakumReleaseAllocations(OakumAllocation *allocations, size_t allocat
     return OAKUM_SUCCESS;
 }
 
-OakumResult oakumGetStackTrace(OakumAllocation *allocation) {
+OakumResult oakumResolveStackTraces(OakumAllocation *allocations, size_t allocationsCount) {
     OAKUM_VERIFY_INITIALIZATION(true, OAKUM_UNINITIALIZED);
-    OAKUM_VERIFY_NON_NULL(allocation);
+    OAKUM_VERIFY((allocations == nullptr) != (allocationsCount == 0), OAKUM_INVALID_VALUE);
 
-    if (!Oakum::OakumController::getInstance()->getStackTrace(*allocation)) {
-        return OAKUM_CANNOT_GET_STACK_TRACE;
+    for (size_t allocationIndex = 0; allocationIndex < allocationsCount; allocationIndex++) {
+        Oakum::OakumController::getInstance()->resolveStackTrace(allocations[allocationIndex]);
     }
+
     return OAKUM_SUCCESS;
 }
 

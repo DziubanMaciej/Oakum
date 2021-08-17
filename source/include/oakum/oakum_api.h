@@ -44,7 +44,7 @@ OakumResult oakumDeinit(bool requireNoLeaks);
 OakumResult oakumGetAllocations(OakumAllocation **outAllocations, size_t *outAllocationsCount);
 OakumResult oakumReleaseAllocations(OakumAllocation *allocations, size_t allocationsCount);
 
-OakumResult oakumGetStackTrace(OakumAllocation *allocation);
+OakumResult oakumResolveStackTraces(OakumAllocation *allocations, size_t allocationsCount);
 
 OakumResult oakumStartIgnore();
 OakumResult oakumStopIgnore();

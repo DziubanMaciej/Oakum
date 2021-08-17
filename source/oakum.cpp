@@ -127,7 +127,7 @@ bool OakumController::hasAllocations() {
     return this->allocations.size();
 }
 
-bool OakumController::getStackTrace(OakumAllocation &allocation) {
+bool OakumController::resolveStackTrace(OakumAllocation &allocation) {
     if (allocation.stackFramesCount != 0) {
         return StackTraceHelper::resolveFrames(allocation.stackFrames, allocation.stackFramesCount);
     }

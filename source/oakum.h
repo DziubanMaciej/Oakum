@@ -23,7 +23,7 @@ public:
     void releaseAllocation(OakumAllocation &allocation);
     bool hasAllocations();
 
-    bool getStackTrace(OakumAllocation &allocation);
+    bool resolveStackTrace(OakumAllocation &allocation);
 
     void incrementIgnoreRefcount();
     bool decrementIgnoreRefcount();

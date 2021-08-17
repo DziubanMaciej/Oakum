@@ -2,24 +2,29 @@
 
 #include "api/fixtures.h"
 
-using OakumGetStackTraceTest = OakumTest;
+using OakumResolveStackTracesTest = OakumTest;
 
 #define EXPECT_STR_CONTAINS(substring, string) EXPECT_NE(nullptr, strstr((string), (substring)))
 
-TEST_F(OakumGetStackTraceTest, givenOakumNotInitializedWhenCallingOakumGetStackTraceThenFail) {
+TEST_F(OakumResolveStackTracesTest, givenOakumNotInitializedWhenCallingOakumResolveStackTracesThenFail) {
     size_t returned{};
     size_t available{};
     EXPECT_OAKUM_SUCCESS(oakumDeinit(false));
-    EXPECT_EQ(OAKUM_UNINITIALIZED, oakumGetStackTrace(nullptr));
+    EXPECT_EQ(OAKUM_UNINITIALIZED, oakumResolveStackTraces(nullptr, 0u));
     EXPECT_EQ(OAKUM_UNINITIALIZED, oakumStopIgnore());
     EXPECT_OAKUM_SUCCESS(oakumInit(nullptr));
 }
 
-TEST_F(OakumGetStackTraceTest, givenNullAllocationPasseddWhenCallingOakumGetStackTraceThenFail) {
-    EXPECT_EQ(OAKUM_INVALID_VALUE, oakumGetStackTrace(nullptr));
+TEST_F(OakumResolveStackTracesTest, givenIllegalNullArgumentsWhenCallingOakumResolveStackTracesThenReturnCorrectValues) {
+    OakumAllocation *allocations = reinterpret_cast<OakumAllocation *>(0x1234);
+    size_t allocationCount = 1u;
+
+    EXPECT_EQ(OAKUM_INVALID_VALUE, oakumResolveStackTraces(allocations, 0u));
+    EXPECT_EQ(OAKUM_INVALID_VALUE, oakumResolveStackTraces(nullptr, allocationCount));
+    EXPECT_EQ(OAKUM_SUCCESS, oakumResolveStackTraces(nullptr, 0u));
 }
 
-TEST_F(OakumGetStackTraceTest, givenDummyFunctionsCalledWhenOakumGetStackTraceIsCalledThenReturnCorrectStackTrace) {
+TEST_F(OakumResolveStackTracesTest, givenDummyFunctionsCalledWhenOakumResolveStackTracesIsCalledThenReturnCorrectStackTrace) {
     auto memory = dummyFunctionA();
 
     OakumAllocation *allocations = nullptr;
@@ -27,9 +32,9 @@ TEST_F(OakumGetStackTraceTest, givenDummyFunctionsCalledWhenOakumGetStackTraceIs
     EXPECT_OAKUM_SUCCESS(oakumGetAllocations(&allocations, &allocationCount));
     EXPECT_NE(nullptr, allocations);
     EXPECT_EQ(1u, allocationCount);
-    OakumAllocation &allocation = allocations[0];
 
-    EXPECT_OAKUM_SUCCESS(oakumGetStackTrace(&allocation));
+    EXPECT_OAKUM_SUCCESS(oakumResolveStackTraces(allocations, allocationCount));
+    OakumAllocation &allocation = allocations[0];
 
     EXPECT_STR_CONTAINS("operator new", allocation.stackFrames[0].symbolName);
 
