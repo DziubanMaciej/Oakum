@@ -19,7 +19,8 @@ public:
     static void *allocateMemory(std::size_t size, bool noThrow);
     static void deallocateMemory(void *pointer);
 
-    void getAllocations(OakumAllocation *outAllocations, size_t allocationsCount, size_t &outAllocationsReturned, size_t &outAllocationsAvailable);
+    void getAllocations(OakumAllocation *&outAllocations, size_t &outAllocationsCount);
+    void releaseAllocation(OakumAllocation &allocation);
     bool hasAllocations();
 
     bool getStackTrace(OakumAllocation &allocation);
@@ -37,7 +38,7 @@ private:
     static inline thread_local size_t ignoreRefcount = false;
 
     std::atomic<OakumAllocationIdType> allocationIdCounter = {};
-    std::mutex allocationsLock = {};
+    std::recursive_mutex allocationsLock = {};
     std::unordered_map<void *, OakumAllocation> allocations = {};
 };
 

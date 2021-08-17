@@ -8,6 +8,7 @@
     }
 #define OAKUM_VERIFY_INITIALIZATION(expectedValue, errorCode) OAKUM_VERIFY(Oakum::OakumController::isInitialized() != expectedValue, errorCode)
 #define OAKUM_VERIFY_NON_NULL(ptr) OAKUM_VERIFY(ptr == nullptr, OAKUM_INVALID_VALUE)
+#define OAKUM_VERIFY_POSITIVE(value) OAKUM_VERIFY(value <= 0, OAKUM_INVALID_VALUE)
 
 OakumResult oakumInit(const OakumInitArgs *args) {
     OAKUM_VERIFY_INITIALIZATION(false, OAKUM_ALREADY_INITIALIZED);
@@ -27,15 +28,22 @@ OakumResult oakumDeinit(bool requireNoLeaks) {
     return OAKUM_SUCCESS;
 }
 
-OakumResult oakumGetAllocations(OakumAllocation *outAllocations, size_t allocationsCount, size_t *outAllocationsReturned, size_t *outAllocationsAvailable) {
+OakumResult oakumGetAllocations(OakumAllocation **outAllocations, size_t *outAllocationsCount) {
     OAKUM_VERIFY_INITIALIZATION(true, OAKUM_UNINITIALIZED);
-    OAKUM_VERIFY_NON_NULL(outAllocationsReturned);
-    OAKUM_VERIFY_NON_NULL(outAllocationsAvailable);
-    if (allocationsCount > 0) {
-        OAKUM_VERIFY_NON_NULL(outAllocations);
-    }
+    OAKUM_VERIFY_NON_NULL(outAllocations);
+    OAKUM_VERIFY_NON_NULL(outAllocationsCount);
 
-    Oakum::OakumController::getInstance()->getAllocations(outAllocations, allocationsCount, *outAllocationsReturned, *outAllocationsAvailable);
+    Oakum::OakumController::getInstance()->getAllocations(*outAllocations, *outAllocationsCount);
+    return OAKUM_SUCCESS;
+}
+
+OakumResult oakumReleaseAllocations(OakumAllocation *allocations, size_t allocationsCount) {
+    OAKUM_VERIFY_INITIALIZATION(true, OAKUM_UNINITIALIZED);
+    OAKUM_VERIFY((allocations == nullptr) != (allocationsCount == 0), OAKUM_INVALID_VALUE);
+
+    for (size_t allocationIndex = 0; allocationIndex < allocationsCount; allocationIndex++) {
+        Oakum::OakumController::getInstance()->releaseAllocation(allocations[allocationIndex]);
+    }
     return OAKUM_SUCCESS;
 }
 

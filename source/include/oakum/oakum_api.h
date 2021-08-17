@@ -10,13 +10,12 @@ struct OakumInitArgs {
 
 using OakumAllocationIdType = uint64_t;
 
-#define OAKUM_MAX_SYMBOL_NAME_SIZE 100
-#define OAKUM_MAX_FILE_NAME_SIZE 200
+#define OAKUM_MAX_STACK_FRAMES_COUNT 10
 
 struct OakumStackFrame {
     void *address;
-    char symbolName[OAKUM_MAX_SYMBOL_NAME_SIZE];
-    char fileName[OAKUM_MAX_FILE_NAME_SIZE];
+    char *symbolName;
+    char *fileName;
     unsigned int fileLine;
 };
 
@@ -25,7 +24,7 @@ struct OakumAllocation {
     size_t size;
     void *pointer;
     bool noThrow;
-    OakumStackFrame *stackFrames;
+    OakumStackFrame stackFrames[OAKUM_MAX_STACK_FRAMES_COUNT];
     size_t stackFramesCount;
 };
 
@@ -42,7 +41,9 @@ enum OakumResult {
 OakumResult oakumInit(const OakumInitArgs *args);
 OakumResult oakumDeinit(bool requireNoLeaks);
 
-OakumResult oakumGetAllocations(OakumAllocation *outAllocations, size_t allocationsCount, size_t *outAllocationsReturned, size_t *outAllocationsAvailable);
+OakumResult oakumGetAllocations(OakumAllocation **outAllocations, size_t *outAllocationsCount);
+OakumResult oakumReleaseAllocations(OakumAllocation *allocations, size_t allocationsCount);
+
 OakumResult oakumGetStackTrace(OakumAllocation *allocation);
 
 OakumResult oakumStartIgnore();

@@ -5,45 +5,41 @@ struct OakumGetAllocationsTest : OakumTest {
         EXPECT_NE(nullptr, allocation.stackFrames);
         EXPECT_GE(allocation.stackFramesCount, 0u);
 
-        const auto isNullChar = [](char c) { return c == '\0'; };
         for (size_t stackFrameIndex = 0; stackFrameIndex < allocation.stackFramesCount; stackFrameIndex++) {
             const OakumStackFrame &frame = allocation.stackFrames[stackFrameIndex];
             EXPECT_NE(nullptr, frame.address);
-            EXPECT_TRUE(std::all_of(frame.symbolName, frame.symbolName + sizeof(frame.symbolName), isNullChar));
-            EXPECT_TRUE(std::all_of(frame.fileName, frame.fileName + sizeof(frame.fileName), isNullChar));
+            EXPECT_EQ(nullptr, frame.symbolName);
+            EXPECT_EQ(nullptr, frame.fileName);
             EXPECT_EQ(0u, frame.fileLine);
         }
     }
 };
 
 TEST_F(OakumGetAllocationsTest, givenOakumNotInitializedWhenCallingOakumGetAllocationsThenFail) {
-    size_t returned{};
-    size_t available{};
+    OakumAllocation *allocations = nullptr;
+    size_t allocationCount = 0u;
+
     EXPECT_OAKUM_SUCCESS(oakumDeinit(false));
-    EXPECT_EQ(OAKUM_UNINITIALIZED, oakumGetAllocations(nullptr, 0, &returned, &available));
+    EXPECT_EQ(OAKUM_UNINITIALIZED, oakumGetAllocations(&allocations, &allocationCount));
     EXPECT_OAKUM_SUCCESS(oakumInit(nullptr));
 }
 
 TEST_F(OakumGetAllocationsTest, givenNoAllocationsWhenCallingOakumGetAllocationsThenReturnNoAllocations) {
-    size_t returned{};
-    size_t available{};
-    EXPECT_OAKUM_SUCCESS(oakumGetAllocations(nullptr, 0, &returned, &available));
-    EXPECT_EQ(0u, returned);
-    EXPECT_EQ(0u, available);
-}
+    OakumAllocation *allocations = nullptr;
+    size_t allocationCount = 0u;
 
-TEST_F(OakumGetAllocationsTest, givenNonZeroAllocationsCountAndNullAllocationsPointerPassedWhenCallingOakumGetAllocationsThenReturnInvalidValue) {
-    size_t returned{};
-    size_t available{};
-    EXPECT_EQ(OAKUM_INVALID_VALUE, oakumGetAllocations(nullptr, 1, &returned, &available));
+    EXPECT_OAKUM_SUCCESS(oakumGetAllocations(&allocations, &allocationCount));
+    EXPECT_EQ(nullptr, allocations);
+    EXPECT_EQ(0u, allocationCount);
 }
 
 TEST_F(OakumGetAllocationsTest, givenIllegalNullArgumentsWhenCallingOakumGetAllocationsThenReturnInvalidValue) {
-    size_t returned{};
-    size_t available{};
-    EXPECT_EQ(OAKUM_INVALID_VALUE, oakumGetAllocations(nullptr, 0, &returned, nullptr));
-    EXPECT_EQ(OAKUM_INVALID_VALUE, oakumGetAllocations(nullptr, 0, nullptr, &available));
-    EXPECT_EQ(OAKUM_INVALID_VALUE, oakumGetAllocations(nullptr, 0, nullptr, nullptr));
+    OakumAllocation *allocations = nullptr;
+    size_t allocationCount = 0u;
+
+    EXPECT_EQ(OAKUM_INVALID_VALUE, oakumGetAllocations(&allocations, nullptr));
+    EXPECT_EQ(OAKUM_INVALID_VALUE, oakumGetAllocations(nullptr, &allocationCount));
+    EXPECT_EQ(OAKUM_INVALID_VALUE, oakumGetAllocations(nullptr, nullptr));
 }
 
 TEST_F(OakumGetAllocationsTest, givenSomeAllocationsWhenCallingOakumGetAllocationsThenReturnThem) {
@@ -51,18 +47,13 @@ TEST_F(OakumGetAllocationsTest, givenSomeAllocationsWhenCallingOakumGetAllocatio
     int *b = new int;
     int *c = new int[12];
 
-    size_t returned{};
-    size_t available{};
-    EXPECT_OAKUM_SUCCESS(oakumGetAllocations(nullptr, 0, &returned, &available));
-    EXPECT_EQ(0u, returned);
-    EXPECT_EQ(3u, available);
-
-    OakumAllocation allocations[3] = {};
-    EXPECT_OAKUM_SUCCESS(oakumGetAllocations(allocations, 3, &returned, &available));
-    EXPECT_EQ(3u, returned);
-    EXPECT_EQ(3u, available);
-
+    OakumAllocation *allocations = nullptr;
+    size_t allocationCount = 0u;
+    EXPECT_OAKUM_SUCCESS(oakumGetAllocations(&allocations, &allocationCount));
+    EXPECT_NE(nullptr, allocations);
+    EXPECT_EQ(3u, allocationCount);
     sortAllocationsById(allocations, 3);
+
     EXPECT_EQ(0u, allocations[0].allocationId);
     EXPECT_EQ(sizeof(char), allocations[0].size);
     EXPECT_EQ(a, allocations[0].pointer);
@@ -84,6 +75,7 @@ TEST_F(OakumGetAllocationsTest, givenSomeAllocationsWhenCallingOakumGetAllocatio
     delete a;
     delete b;
     delete[] c;
+    EXPECT_OAKUM_SUCCESS(oakumReleaseAllocations(allocations, allocationCount));
 }
 
 TEST_F(OakumGetAllocationsTest, givenSomeNoThrowAllocationsWhenCallingOakumGetAllocationsThenReturnThem) {
@@ -91,18 +83,13 @@ TEST_F(OakumGetAllocationsTest, givenSomeNoThrowAllocationsWhenCallingOakumGetAl
     int *b = new (std::nothrow) int;
     int *c = new (std::nothrow) int[12];
 
-    size_t returned{};
-    size_t available{};
-    EXPECT_OAKUM_SUCCESS(oakumGetAllocations(nullptr, 0, &returned, &available));
-    EXPECT_EQ(0u, returned);
-    EXPECT_EQ(3u, available);
-
-    OakumAllocation allocations[3] = {};
-    EXPECT_OAKUM_SUCCESS(oakumGetAllocations(allocations, 3, &returned, &available));
-    EXPECT_EQ(3u, returned);
-    EXPECT_EQ(3u, available);
-
+    OakumAllocation *allocations = nullptr;
+    size_t allocationCount = 0u;
+    EXPECT_OAKUM_SUCCESS(oakumGetAllocations(&allocations, &allocationCount));
+    EXPECT_NE(nullptr, allocations);
+    EXPECT_EQ(3u, allocationCount);
     sortAllocationsById(allocations, 3);
+
     EXPECT_EQ(0u, allocations[0].allocationId);
     EXPECT_EQ(sizeof(char), allocations[0].size);
     EXPECT_EQ(a, allocations[0].pointer);
@@ -124,4 +111,5 @@ TEST_F(OakumGetAllocationsTest, givenSomeNoThrowAllocationsWhenCallingOakumGetAl
     delete a;
     delete b;
     delete[] c;
+    EXPECT_OAKUM_SUCCESS(oakumReleaseAllocations(allocations, allocationCount));
 }

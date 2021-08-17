@@ -36,12 +36,15 @@ void *OakumController::allocateMemory(std::size_t size, bool noThrow) {
     info.size = size;
     info.pointer = ::malloc(size);
     info.noThrow = noThrow;
-    info.stackFrames = nullptr;
     info.stackFramesCount = 0;
 
     const bool success = info.pointer != nullptr;
-    if (isInitialized() && success && !getInstance()->getIgnoreState()) {
-        getInstance()->registerAllocation(info);
+    if (success && isInitialized()) {
+        OakumController &oakum = *getInstance();
+        if (!getInstance()->getIgnoreState()) {
+            std::lock_guard lock{oakum.allocationsLock};
+            oakum.registerAllocation(info);
+        }
     }
 
     if (!success) {
@@ -60,48 +63,63 @@ void OakumController::deallocateMemory(void *pointer) {
         return;
     }
 
-    if (isInitialized() && !getInstance()->getIgnoreState()) {
-        getInstance()->registerDeallocation(pointer);
+    if (isInitialized()) {
+        OakumController &oakum = *getInstance();
+        if (!oakum.getIgnoreState()) {
+            std::lock_guard lock{oakum.allocationsLock};
+            oakum.registerDeallocation(pointer);
+        }
     }
 }
 
 void OakumController::OakumController::registerAllocation(OakumAllocation info) {
-    RaiiOakumIgnore raiiIgnore{};
-
     info.allocationId = this->allocationIdCounter++;
     StackTraceHelper::captureFrames(info.stackFrames, info.stackFramesCount);
 
-    std::lock_guard lock{this->allocationsLock};
     FATAL_ERROR_IF(this->allocations.find(info.pointer) != this->allocations.end(), "Pointer already registered");
+
+    RaiiOakumIgnore raiiIgnore{};
     this->allocations.insert({info.pointer, info});
 }
 
 void OakumController::OakumController::registerDeallocation(void *pointer) {
-    RaiiOakumIgnore raiiIgnore{};
-
     FATAL_ERROR_IF(pointer == nullptr, "Null pointer registration");
 
-    std::lock_guard lock{this->allocationsLock};
     auto allocation = this->allocations.find(pointer);
     if (allocation != this->allocations.end()) {
+        RaiiOakumIgnore raiiIgnore{};
         this->allocations.erase(allocation);
     }
 }
 
-void OakumController::getAllocations(OakumAllocation *outAllocations, size_t allocationsCount, size_t &outAllocationsReturned, size_t &outAllocationsAvailable) {
+void OakumController::getAllocations(OakumAllocation *&outAllocations, size_t &outAllocationsCount) {
     std::lock_guard lock{this->allocationsLock};
 
-    outAllocationsAvailable = this->allocations.size();
-    outAllocationsReturned = std::min(outAllocationsAvailable, allocationsCount);
+    outAllocationsCount = this->allocations.size();
+    if (outAllocationsCount > 0) {
+        outAllocations = new OakumAllocation[outAllocationsCount];
 
-    size_t allocationIndex = 0;
-    for (const auto &entry : this->allocations) {
-        if (allocationIndex == outAllocationsReturned) {
-            break;
+        size_t dstIndex = 0u;
+        for (auto srcIterator = this->allocations.begin(); srcIterator != this->allocations.end(); srcIterator++) {
+            if (srcIterator->first == outAllocations) {
+                continue; // We allocated storage for OakumAllocations and we have to skip it here
+            }
+
+            outAllocations[dstIndex] = srcIterator->second;
+            dstIndex++;
         }
-
-        outAllocations[allocationIndex++] = entry.second;
+        DEBUG_ERROR_IF(dstIndex != outAllocationsCount);
+    } else {
+        outAllocations = nullptr;
     }
+}
+
+void OakumController::releaseAllocation(OakumAllocation &allocation) {
+    for (size_t stackFrameIndex = 0; stackFrameIndex < allocation.stackFramesCount; stackFrameIndex++) {
+        delete[] allocation.stackFrames[stackFrameIndex].symbolName;
+        delete[] allocation.stackFrames[stackFrameIndex].fileName;
+    }
+    delete &allocation;
 }
 
 bool OakumController::hasAllocations() {

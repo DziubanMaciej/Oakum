@@ -22,12 +22,12 @@ TEST_F(OakumGetStackTraceTest, givenNullAllocationPasseddWhenCallingOakumGetStac
 TEST_F(OakumGetStackTraceTest, givenDummyFunctionsCalledWhenOakumGetStackTraceIsCalledThenReturnCorrectStackTrace) {
     auto memory = dummyFunctionA();
 
-    OakumAllocation allocation{};
-    size_t returned{};
-    size_t available{};
-    EXPECT_OAKUM_SUCCESS(oakumGetAllocations(&allocation, 1u, &returned, &available));
-    EXPECT_EQ(1u, returned);
-    EXPECT_EQ(1u, available);
+    OakumAllocation *allocations = nullptr;
+    size_t allocationCount = 0u;
+    EXPECT_OAKUM_SUCCESS(oakumGetAllocations(&allocations, &allocationCount));
+    EXPECT_NE(nullptr, allocations);
+    EXPECT_EQ(1u, allocationCount);
+    OakumAllocation &allocation = allocations[0];
 
     EXPECT_OAKUM_SUCCESS(oakumGetStackTrace(&allocation));
 
@@ -48,4 +48,6 @@ TEST_F(OakumGetStackTraceTest, givenDummyFunctionsCalledWhenOakumGetStackTraceIs
     EXPECT_EQ(14, allocation.stackFrames[4].fileLine);
 
     EXPECT_STREQ(__FILE__, allocation.stackFrames[5].fileName);
+
+    EXPECT_OAKUM_SUCCESS(oakumReleaseAllocations(allocations, allocationCount));
 }
