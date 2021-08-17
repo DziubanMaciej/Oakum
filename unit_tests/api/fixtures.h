@@ -8,8 +8,14 @@
 #define EXPECT_OAKUM_SUCCESS(expr) EXPECT_EQ(OAKUM_SUCCESS, (expr))
 
 struct OakumTestBase : ::testing::Test {
-    void SetUp(const OakumInitArgs *args) {
-        EXPECT_OAKUM_SUCCESS(oakumInit(args));
+    OakumInitArgs initArgs{
+        true, // trackStackTraces
+    };
+};
+
+struct OakumTest : OakumTestBase {
+    void SetUp() {
+        EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
     }
 
     void TearDown() override {
@@ -31,16 +37,9 @@ struct OakumTestBase : ::testing::Test {
     }
 };
 
-struct OakumTest : OakumTestBase {
+struct OakumTestWithoutStackTraces : OakumTest {
     void SetUp() override {
-        OakumTestBase::SetUp(nullptr);
-    }
-};
-
-struct OakumTestWithoutStackTraces : OakumTestBase {
-    void SetUp() override {
-        OakumInitArgs args{};
-        args.trackStackTraces = false;
-        OakumTestBase::SetUp(&args);
+        initArgs.trackStackTraces = false;
+        OakumTest::SetUp();
     }
 };

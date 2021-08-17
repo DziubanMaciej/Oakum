@@ -5,7 +5,7 @@ using OakumReleaseAllocationsTest = OakumTest;
 TEST_F(OakumReleaseAllocationsTest, givenOakumNotInitializedWhenCallingOakumReleaseAllocationsThenFail) {
     EXPECT_OAKUM_SUCCESS(oakumDeinit(false));
     EXPECT_EQ(OAKUM_UNINITIALIZED, oakumReleaseAllocations(nullptr, 0u));
-    EXPECT_OAKUM_SUCCESS(oakumInit(nullptr));
+    EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
 }
 
 TEST_F(OakumReleaseAllocationsTest, givenNullArgumentsWhenCallingOakumReleaseAllocationsThenReturnCorrectValues) {

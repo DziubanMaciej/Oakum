@@ -20,7 +20,7 @@ TEST_F(OakumGetAllocationsTest, givenOakumNotInitializedWhenCallingOakumGetAlloc
 
     EXPECT_OAKUM_SUCCESS(oakumDeinit(false));
     EXPECT_EQ(OAKUM_UNINITIALIZED, oakumGetAllocations(&allocations, &allocationCount));
-    EXPECT_OAKUM_SUCCESS(oakumInit(nullptr));
+    EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
 }
 
 TEST_F(OakumGetAllocationsTest, givenNoAllocationsWhenCallingOakumGetAllocationsThenReturnNoAllocations) {

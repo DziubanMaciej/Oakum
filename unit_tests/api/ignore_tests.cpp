@@ -8,7 +8,7 @@ TEST_F(OakumIgnoreTest, givenOakumNotInitializedWhenCallingOakumIgnoreFunctionsT
     EXPECT_OAKUM_SUCCESS(oakumDeinit(false));
     EXPECT_EQ(OAKUM_UNINITIALIZED, oakumStartIgnore());
     EXPECT_EQ(OAKUM_UNINITIALIZED, oakumStopIgnore());
-    EXPECT_OAKUM_SUCCESS(oakumInit(nullptr));
+    EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
 }
 
 TEST_F(OakumIgnoreTest, givenOakumIgnoreIsStartedWhenMemoryIsAllocatedThenItIsNotRecorded) {

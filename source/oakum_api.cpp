@@ -12,12 +12,9 @@
 
 OakumResult oakumInit(const OakumInitArgs *args) {
     OAKUM_VERIFY_INITIALIZATION(false, OAKUM_ALREADY_INITIALIZED);
+    OAKUM_VERIFY_NON_NULL(args);
 
-    const OakumInitArgs defaultArgs = {
-        true, // trackStackTraces
-    };
-
-    Oakum::OakumController::initialize(args != nullptr ? *args : defaultArgs);
+    Oakum::OakumController::initialize(*args);
     return OAKUM_SUCCESS;
 }
 

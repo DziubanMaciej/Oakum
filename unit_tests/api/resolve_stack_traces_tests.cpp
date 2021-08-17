@@ -10,7 +10,7 @@ TEST_F(OakumResolveStackTracesTest, givenOakumNotInitializedWhenCallingOakumReso
     EXPECT_OAKUM_SUCCESS(oakumDeinit(false));
     EXPECT_EQ(OAKUM_UNINITIALIZED, oakumResolveStackTraces(nullptr, 0u));
     EXPECT_EQ(OAKUM_UNINITIALIZED, oakumStopIgnore());
-    EXPECT_OAKUM_SUCCESS(oakumInit(nullptr));
+    EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
 }
 
 TEST_F(OakumResolveStackTracesTest, givenNullArgumentsWhenCallingOakumResolveStackTracesThenReturnCorrectValues) {
