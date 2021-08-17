@@ -10,7 +10,9 @@ struct OakumInitArgs {
 
 using OakumAllocationIdType = uint64_t;
 
+#ifndef OAKUM_MAX_STACK_FRAMES_COUNT
 #define OAKUM_MAX_STACK_FRAMES_COUNT 10
+#endif
 
 struct OakumStackFrame {
     void *address;
