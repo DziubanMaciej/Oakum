@@ -38,6 +38,7 @@ enum OakumResult {
     OAKUM_INVALID_VALUE,
     OAKUM_LEAKS_DETECTED,
     OAKUM_CANNOT_GET_STACK_TRACE,
+    OAKUM_FEATURE_NOT_SUPPORTED,
 };
 
 OakumResult oakumInit(const OakumInitArgs *args);

@@ -13,7 +13,11 @@
 OakumResult oakumInit(const OakumInitArgs *args) {
     OAKUM_VERIFY_INITIALIZATION(false, OAKUM_ALREADY_INITIALIZED);
 
-    Oakum::OakumController::initialize();
+    const OakumInitArgs defaultArgs = {
+        true, // trackStackTraces
+    };
+
+    Oakum::OakumController::initialize(args != nullptr ? *args : defaultArgs);
     return OAKUM_SUCCESS;
 }
 
@@ -60,6 +64,7 @@ OakumResult oakumReleaseAllocations(OakumAllocation *allocations, size_t allocat
 OakumResult oakumResolveStackTraces(OakumAllocation *allocations, size_t allocationsCount) {
     OAKUM_VERIFY_INITIALIZATION(true, OAKUM_UNINITIALIZED);
     OAKUM_VERIFY((allocations == nullptr) != (allocationsCount == 0), OAKUM_INVALID_VALUE);
+    OAKUM_VERIFY(!Oakum::OakumController::getInstance()->isTrackingStackTraces(), OAKUM_FEATURE_NOT_SUPPORTED);
 
     for (size_t allocationIndex = 0; allocationIndex < allocationsCount; allocationIndex++) {
         Oakum::OakumController::getInstance()->resolveStackTrace(allocations[allocationIndex]);

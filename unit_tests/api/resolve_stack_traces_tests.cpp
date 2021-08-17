@@ -7,8 +7,6 @@ using OakumResolveStackTracesTest = OakumTest;
 #define EXPECT_STR_CONTAINS(substring, string) EXPECT_NE(nullptr, strstr((string), (substring)))
 
 TEST_F(OakumResolveStackTracesTest, givenOakumNotInitializedWhenCallingOakumResolveStackTracesThenFail) {
-    size_t returned{};
-    size_t available{};
     EXPECT_OAKUM_SUCCESS(oakumDeinit(false));
     EXPECT_EQ(OAKUM_UNINITIALIZED, oakumResolveStackTraces(nullptr, 0u));
     EXPECT_EQ(OAKUM_UNINITIALIZED, oakumStopIgnore());
@@ -55,4 +53,21 @@ TEST_F(OakumResolveStackTracesTest, givenDummyFunctionsCalledWhenOakumResolveSta
     EXPECT_STREQ(__FILE__, allocation.stackFrames[5].fileName);
 
     EXPECT_OAKUM_SUCCESS(oakumReleaseAllocations(allocations, allocationCount));
+}
+
+using OakumResolveStackTracesWithoutStackTracesTest = OakumTestWithoutStackTraces;
+
+TEST_F(OakumResolveStackTracesWithoutStackTracesTest, givenNoStackTracesWhenCallingResolveStackTracesThenReturnFeatureUnsupported) {
+    char *memory = new char;
+
+    OakumAllocation *allocations = nullptr;
+    size_t allocationCount = 0u;
+    EXPECT_OAKUM_SUCCESS(oakumGetAllocations(&allocations, &allocationCount));
+    EXPECT_NE(nullptr, allocations);
+    EXPECT_EQ(1u, allocationCount);
+
+    EXPECT_EQ(OAKUM_FEATURE_NOT_SUPPORTED, oakumResolveStackTraces(allocations, allocationCount));
+
+    EXPECT_OAKUM_SUCCESS(oakumReleaseAllocations(allocations, allocationCount));
+    delete memory;
 }

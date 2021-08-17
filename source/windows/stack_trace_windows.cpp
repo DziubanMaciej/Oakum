@@ -6,6 +6,17 @@
 #include <algorithm>
 #include <dbghelp.h>
 
+void StackTraceHelper::initializeFrames(OakumStackFrame *frames, size_t &framesCount) {
+    OakumStackFrame emptyFrame = {
+        nullptr,
+        nullptr,
+        nullptr,
+        0u,
+    };
+    std::fill_n(frames, framesCount, emptyFrame);
+    framesCount = 0u;
+}
+
 void StackTraceHelper::captureFrames(OakumStackFrame *frames, size_t &framesCount) {
     constexpr static size_t skippedFrames = 3;
     static thread_local void *frameAddresses[OAKUM_MAX_STACK_FRAMES_COUNT] = {};
@@ -14,9 +25,6 @@ void StackTraceHelper::captureFrames(OakumStackFrame *frames, size_t &framesCoun
     if (framesCount > 0) {
         for (size_t frameIndex = 0; frameIndex < framesCount; frameIndex++) {
             frames[frameIndex].address = frameAddresses[frameIndex];
-            frames[frameIndex].symbolName = nullptr;
-            frames[frameIndex].fileName = nullptr;
-            frames[frameIndex].fileLine = 0;
         }
     }
 }

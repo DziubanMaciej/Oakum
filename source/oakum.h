@@ -11,7 +11,7 @@ namespace Oakum {
 
 class OakumController {
 public:
-    static void initialize();
+    static void initialize(const OakumInitArgs &initArgs);
     static void deinitialize();
     static bool isInitialized();
     static OakumController *getInstance();
@@ -23,6 +23,7 @@ public:
     void releaseAllocation(OakumAllocation &allocation);
     bool hasAllocations();
 
+    bool isTrackingStackTraces() const;
     bool resolveStackTrace(OakumAllocation &allocation);
 
     void incrementIgnoreRefcount();
@@ -33,10 +34,11 @@ private:
     void registerDeallocation(void *pointer);
     bool getIgnoreState();
 
-    OakumController() = default;
+    OakumController(const OakumInitArgs &initArgs);
     static inline std::unique_ptr<OakumController> instance = {};
     static inline thread_local size_t ignoreRefcount = false;
 
+    const OakumInitArgs initArgs;
     std::atomic<OakumAllocationIdType> allocationIdCounter = {};
     std::recursive_mutex allocationsLock = {};
     std::unordered_map<void *, OakumAllocation> allocations = {};

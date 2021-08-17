@@ -7,9 +7,9 @@
 
 #define EXPECT_OAKUM_SUCCESS(expr) EXPECT_EQ(OAKUM_SUCCESS, (expr))
 
-struct OakumTest : ::testing::Test {
-    void SetUp() override {
-        EXPECT_OAKUM_SUCCESS(oakumInit(nullptr));
+struct OakumTestBase : ::testing::Test {
+    void SetUp(const OakumInitArgs *args) {
+        EXPECT_OAKUM_SUCCESS(oakumInit(args));
     }
 
     void TearDown() override {
@@ -28,5 +28,19 @@ struct OakumTest : ::testing::Test {
 
     size_t getHugeMemorySize() {
         return std::numeric_limits<size_t>::max() / 2;
+    }
+};
+
+struct OakumTest : OakumTestBase {
+    void SetUp() override {
+        OakumTestBase::SetUp(nullptr);
+    }
+};
+
+struct OakumTestWithoutStackTraces : OakumTestBase {
+    void SetUp() override {
+        OakumInitArgs args{};
+        args.trackStackTraces = false;
+        OakumTestBase::SetUp(&args);
     }
 };

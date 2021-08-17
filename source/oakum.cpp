@@ -12,9 +12,11 @@ struct RaiiOakumIgnore {
 };
 
 namespace Oakum {
-void OakumController::initialize() {
+OakumController::OakumController(const OakumInitArgs &initArgs) : initArgs(initArgs) {}
+
+void OakumController::initialize(const OakumInitArgs &initArgs) {
     FATAL_ERROR_IF(isInitialized(), "Multiple Oakum initialization");
-    instance.reset(new OakumController());
+    instance.reset(new OakumController(initArgs));
 }
 
 void OakumController::deinitialize() {
@@ -74,7 +76,10 @@ void OakumController::deallocateMemory(void *pointer) {
 
 void OakumController::OakumController::registerAllocation(OakumAllocation info) {
     info.allocationId = this->allocationIdCounter++;
-    StackTraceHelper::captureFrames(info.stackFrames, info.stackFramesCount);
+    StackTraceHelper::initializeFrames(info.stackFrames, info.stackFramesCount);
+    if (isTrackingStackTraces()) {
+        StackTraceHelper::captureFrames(info.stackFrames, info.stackFramesCount);
+    }
 
     FATAL_ERROR_IF(this->allocations.find(info.pointer) != this->allocations.end(), "Pointer already registered");
 
@@ -125,6 +130,10 @@ void OakumController::releaseAllocation(OakumAllocation &allocation) {
 bool OakumController::hasAllocations() {
     std::lock_guard lock{this->allocationsLock};
     return this->allocations.size();
+}
+
+bool OakumController::isTrackingStackTraces() const {
+    return this->initArgs.trackStackTraces;
 }
 
 bool OakumController::resolveStackTrace(OakumAllocation &allocation) {

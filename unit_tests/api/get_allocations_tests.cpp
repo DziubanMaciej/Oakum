@@ -2,7 +2,6 @@
 
 struct OakumGetAllocationsTest : OakumTest {
     void validateStackFrames(OakumAllocation &allocation) {
-        EXPECT_NE(nullptr, allocation.stackFrames);
         EXPECT_GE(allocation.stackFramesCount, 0u);
 
         for (size_t stackFrameIndex = 0; stackFrameIndex < allocation.stackFramesCount; stackFrameIndex++) {
@@ -112,5 +111,27 @@ TEST_F(OakumGetAllocationsTest, givenSomeNoThrowAllocationsWhenCallingOakumGetAl
     delete a;
     delete b;
     delete[] c;
+    EXPECT_OAKUM_SUCCESS(oakumReleaseAllocations(allocations, allocationCount));
+}
+
+using OakumGetAllocationsWithoutStackTracesTest = OakumTestWithoutStackTraces;
+
+TEST_F(OakumGetAllocationsWithoutStackTracesTest, givenNoStackTracesWhenCallingOakumGetAllocationsThenReturnThemWithoutStackTraces) {
+    char *memory = new char;
+
+    OakumAllocation *allocations = nullptr;
+    size_t allocationCount = 0u;
+    EXPECT_OAKUM_SUCCESS(oakumGetAllocations(&allocations, &allocationCount));
+    EXPECT_NE(nullptr, allocations);
+    EXPECT_EQ(1u, allocationCount);
+
+    EXPECT_EQ(0u, allocations[0].allocationId);
+    EXPECT_EQ(sizeof(char), allocations[0].size);
+    EXPECT_EQ(memory, allocations[0].pointer);
+    EXPECT_FALSE(allocations[0].noThrow);
+    EXPECT_EQ(0u, allocations[0].stackFramesCount);
+
+    delete memory;
+
     EXPECT_OAKUM_SUCCESS(oakumReleaseAllocations(allocations, allocationCount));
 }
