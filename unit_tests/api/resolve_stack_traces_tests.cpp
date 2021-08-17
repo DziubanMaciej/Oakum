@@ -15,7 +15,7 @@ TEST_F(OakumResolveStackTracesTest, givenOakumNotInitializedWhenCallingOakumReso
     EXPECT_OAKUM_SUCCESS(oakumInit(nullptr));
 }
 
-TEST_F(OakumResolveStackTracesTest, givenIllegalNullArgumentsWhenCallingOakumResolveStackTracesThenReturnCorrectValues) {
+TEST_F(OakumResolveStackTracesTest, givenNullArgumentsWhenCallingOakumResolveStackTracesThenReturnCorrectValues) {
     OakumAllocation *allocations = reinterpret_cast<OakumAllocation *>(0x1234);
     size_t allocationCount = 1u;
 

@@ -31,6 +31,7 @@ TEST_F(OakumGetAllocationsTest, givenNoAllocationsWhenCallingOakumGetAllocations
     EXPECT_OAKUM_SUCCESS(oakumGetAllocations(&allocations, &allocationCount));
     EXPECT_EQ(nullptr, allocations);
     EXPECT_EQ(0u, allocationCount);
+    EXPECT_OAKUM_SUCCESS(oakumReleaseAllocations(allocations, allocationCount));
 }
 
 TEST_F(OakumGetAllocationsTest, givenIllegalNullArgumentsWhenCallingOakumGetAllocationsThenReturnInvalidValue) {
