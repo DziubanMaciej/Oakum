@@ -1,4 +1,4 @@
-#include "api/fixtures.h"
+#include "fixtures.h"
 
 using OakumOperatorTest = OakumTest;
 

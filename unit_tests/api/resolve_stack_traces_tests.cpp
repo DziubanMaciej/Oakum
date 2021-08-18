@@ -1,6 +1,5 @@
 #include "dummy_functions.h"
-
-#include "api/fixtures.h"
+#include "fixtures.h"
 
 using OakumResolveStackTracesTest = OakumTest;
 

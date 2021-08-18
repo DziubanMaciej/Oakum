@@ -1,4 +1,4 @@
-#include "api/fixtures.h"
+#include "fixtures.h"
 
 struct OakumGetAllocationsTest : OakumTest {
     void validateStackFrames(OakumAllocation &allocation) {

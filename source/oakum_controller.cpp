@@ -1,5 +1,5 @@
 #include "error.h"
-#include "oakum.h"
+#include "oakum_controller.h"
 #include "stack_trace.h"
 
 struct RaiiOakumIgnore {
