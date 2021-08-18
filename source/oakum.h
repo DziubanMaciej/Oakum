@@ -29,12 +29,22 @@ public:
     void incrementIgnoreRefcount();
     bool decrementIgnoreRefcount();
 
-private:
+protected:
     void registerAllocation(OakumAllocation info);
     void registerDeallocation(void *pointer);
     bool getIgnoreState();
 
+    auto getAllocationsLock() {
+        std::unique_lock lock{allocationsLock, std::defer_lock};
+        if (initArgs.threadSafe) {
+            lock.lock();
+        }
+        return lock;
+    }
+
     OakumController(const OakumInitArgs &initArgs);
+
+private:
     static inline std::unique_ptr<OakumController> instance = {};
     static inline thread_local size_t ignoreRefcount = false;
 

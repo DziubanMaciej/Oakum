@@ -10,6 +10,7 @@
 struct OakumTestBase : ::testing::Test {
     OakumInitArgs initArgs{
         true, // trackStackTraces
+        true, // threadSafe
     };
 };
 

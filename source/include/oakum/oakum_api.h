@@ -6,6 +6,7 @@
 extern "C" {
 struct OakumInitArgs {
     bool trackStackTraces;
+    bool threadSafe;
 };
 
 using OakumAllocationIdType = uint64_t;

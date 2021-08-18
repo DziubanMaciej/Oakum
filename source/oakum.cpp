@@ -44,7 +44,7 @@ void *OakumController::allocateMemory(std::size_t size, bool noThrow) {
     if (success && isInitialized()) {
         OakumController &oakum = *getInstance();
         if (!getInstance()->getIgnoreState()) {
-            std::lock_guard lock{oakum.allocationsLock};
+            const auto lock = oakum.getAllocationsLock();
             oakum.registerAllocation(info);
         }
     }
@@ -68,7 +68,7 @@ void OakumController::deallocateMemory(void *pointer) {
     if (isInitialized()) {
         OakumController &oakum = *getInstance();
         if (!oakum.getIgnoreState()) {
-            std::lock_guard lock{oakum.allocationsLock};
+            const auto lock = oakum.getAllocationsLock();
             oakum.registerDeallocation(pointer);
         }
     }
@@ -98,7 +98,7 @@ void OakumController::OakumController::registerDeallocation(void *pointer) {
 }
 
 void OakumController::getAllocations(OakumAllocation *&outAllocations, size_t &outAllocationsCount) {
-    std::lock_guard lock{this->allocationsLock};
+    const auto lock = getAllocationsLock();
 
     outAllocationsCount = this->allocations.size();
     if (outAllocationsCount > 0) {
@@ -128,7 +128,7 @@ void OakumController::releaseAllocation(OakumAllocation &allocation) {
 }
 
 bool OakumController::hasAllocations() {
-    std::lock_guard lock{this->allocationsLock};
+    const auto lock = getAllocationsLock();
     return this->allocations.size();
 }
 
