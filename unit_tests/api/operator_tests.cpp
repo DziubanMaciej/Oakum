@@ -1,6 +1,10 @@
 #include "fixtures.h"
 
-using OakumOperatorTest = OakumTest;
+struct OakumOperatorTest : OakumTest {
+    size_t getHugeMemorySize() {
+        return std::numeric_limits<size_t>::max() / 2;
+    }
+};
 
 TEST_F(OakumOperatorTest, givenNoThrowNotSpecifiedWhenMemoryAllocationFailsThenThrowBadAlloc) {
     EXPECT_THROW(new char[getHugeMemorySize()], std::bad_alloc);

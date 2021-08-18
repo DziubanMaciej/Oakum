@@ -12,6 +12,13 @@ struct OakumGetAllocationsTest : OakumTest {
             EXPECT_EQ(0u, frame.fileLine);
         }
     }
+
+    void sortAllocationsById(OakumAllocation *allocations, size_t count) {
+        auto comparator = [](const OakumAllocation &left, const OakumAllocation &right) {
+            return left.allocationId < right.allocationId;
+        };
+        std::sort(allocations, allocations + count, comparator);
+    }
 };
 
 TEST_F(OakumGetAllocationsTest, givenOakumNotInitializedWhenCallingOakumGetAllocationsThenFail) {

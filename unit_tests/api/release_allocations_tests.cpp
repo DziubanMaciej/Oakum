@@ -28,7 +28,7 @@ TEST_F(OakumReleaseAllocationsTest, givenAllocationWhenCallingOakumReleaseAlloca
 
     delete memory;
 
-    EXPECT_EQ(OAKUM_LEAKS_DETECTED, oakumDeinit(true));
+    EXPECT_EQ(OAKUM_LEAKS_DETECTED, oakumDetectLeaks());
 
     EXPECT_OAKUM_SUCCESS(oakumReleaseAllocations(allocations, allocationCount));
     EXPECT_OAKUM_SUCCESS(oakumDetectLeaks());
