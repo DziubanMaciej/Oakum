@@ -3,7 +3,7 @@
 #include <iostream>
 
 namespace Oakum {
-void performAbort() {
+inline void performAbort() {
     throw std::exception{};
 }
 

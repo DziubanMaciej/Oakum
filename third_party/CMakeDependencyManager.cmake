@@ -210,7 +210,7 @@ function (_DependencyManager_setup_out_of_project_dependency DEPENDENCY_NAME DEP
 
     # Run the created CMakeLists file
     set(LOG_FILE ${DEPENDENCY_DIR}/log_cmake.txt)
-    execute_process(COMMAND cmake "-DCMAKE_CONFIGURATION_TYPES=${ALL_BUILD_TYPES}" ..
+    execute_process(COMMAND cmake "-DCMAKE_CONFIGURATION_TYPES=${ALL_BUILD_TYPES}" ${CMAKE_ARGS} ..
             WORKING_DIRECTORY ${BUILD_DIR}
             RESULT_VARIABLE RESULT
             OUTPUT_FILE ${LOG_FILE}
@@ -222,7 +222,14 @@ function (_DependencyManager_setup_out_of_project_dependency DEPENDENCY_NAME DEP
     # Compile all targets in all required configurations
     _DependencyManager_get_core_count(CORE_COUNT)
     foreach(BUILD_TYPE ${ALL_BUILD_TYPES})
-        file(STRINGS ${DEPENDENCY_DIR}/targets${BUILD_TYPE}.txt TARGET_INFOS)
+        set(TARGETS_FILE ${DEPENDENCY_DIR}/targets)
+        get_cmake_property(GENERATOR_IS_MULTI_CONFIG GENERATOR_IS_MULTI_CONFIG)
+        if (GENERATOR_IS_MULTI_CONFIG)
+            string(APPEND TARGETS_FILE "${BUILD_TYPE}")
+        endif()
+        string(APPEND TARGETS_FILE ".txt")
+
+        file(STRINGS ${TARGETS_FILE} TARGET_INFOS)
         foreach(TARGET_INFO ${TARGET_INFOS})
             # Retrieve target name
             set(TGT ${TARGET_INFO})
@@ -268,8 +275,8 @@ endfunction()
 function(DependencyManager_create_dependency DEPENDENCY_NAME)
     # Parse arguments
     set(OPTIONS_ARGS     IS_SUBMODULE)
-    set(ONE_VALUE_ARGS   BUILD_METHOD DIRECTORY SELECTED_BUILD_TYPE CMAKE_ARGS)
-    set(MULTI_VALUE_ARGS ALL_BUILD_TYPES)
+    set(ONE_VALUE_ARGS   BUILD_METHOD DIRECTORY SELECTED_BUILD_TYPE)
+    set(MULTI_VALUE_ARGS ALL_BUILD_TYPES CMAKE_ARGS)
     cmake_parse_arguments(ARG "${OPTIONS_ARGS}" "${ONE_VALUE_ARGS}" "${MULTI_VALUE_ARGS}" ${ARGN})
 
     # Initialize default dependency data

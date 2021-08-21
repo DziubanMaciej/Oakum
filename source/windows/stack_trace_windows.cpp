@@ -18,7 +18,6 @@ void StackTraceHelper::initializeFrames(OakumStackFrame *frames, size_t &framesC
 }
 
 void StackTraceHelper::captureFrames(OakumStackFrame *frames, size_t &framesCount) {
-    constexpr static size_t skippedFrames = 3;
     static thread_local void *frameAddresses[OAKUM_MAX_STACK_FRAMES_COUNT] = {};
     framesCount = CaptureStackBackTrace(skippedFrames, OAKUM_MAX_STACK_FRAMES_COUNT, frameAddresses, nullptr);
 
