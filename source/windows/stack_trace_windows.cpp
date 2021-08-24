@@ -1,3 +1,4 @@
+#include "error.h"
 #include "stack_trace.h"
 
 #include "oakum/oakum_api.h"
@@ -33,9 +34,9 @@ void StackTraceHelper::captureFrames(OakumStackFrame *frames, size_t &framesCoun
 }
 
 static void setupString(char *&destination, const char *source) {
-    const size_t sourceSize = strlen(source);
-    destination = new char[sourceSize + 1];
-    strcpy(destination, source);
+    const size_t bufferSize = strlen(source) + 1;
+    destination = new char[bufferSize];
+    FATAL_ERROR_IF(strcpy_s(destination, bufferSize, source) != 0, "strcpy failed");
 }
 
 bool StackTraceHelper::resolveSymbols(OakumStackFrame *frames, size_t framesCount) {
