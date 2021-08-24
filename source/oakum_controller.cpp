@@ -23,12 +23,12 @@ OakumCapabilities OakumController::createCapabilities(const OakumInitArgs &initA
 }
 
 void OakumController::initialize(const OakumInitArgs &initArgs) {
-    FATAL_ERROR_IF(isInitialized(), "Multiple Oakum initialization");
+    DEBUG_ERROR_IF(isInitialized(), "Multiple Oakum initialization");
     instance.reset(new OakumController(initArgs));
 }
 
 void OakumController::deinitialize() {
-    FATAL_ERROR_IF(!isInitialized(), "Oakum uninitialized");
+    DEBUG_ERROR_IF(!isInitialized(), "Oakum uninitialized");
     instance.reset();
 }
 
@@ -37,7 +37,7 @@ bool OakumController::isInitialized() {
 }
 
 OakumController *OakumController::getInstance() {
-    FATAL_ERROR_IF(!isInitialized(), "Oakum uninitialized");
+    DEBUG_ERROR_IF(!isInitialized(), "Oakum uninitialized");
     return instance.get();
 }
 
