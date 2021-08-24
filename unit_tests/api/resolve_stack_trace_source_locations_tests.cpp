@@ -4,6 +4,17 @@
 #define EXPECT_STR_CONTAINS(substring, string) EXPECT_NE(nullptr, strstr((string), (substring)))
 
 struct OakumResolveStackTraceSourceLocationsTest : OakumTest {
+    void SetUp() override {
+        OakumTest::SetUp();
+
+        OakumCapabilities capabilities{};
+        EXPECT_OAKUM_SUCCESS(oakumGetCapabilities(&capabilities));
+        if (!capabilities.supportStackTracesSourceLocations) {
+            RaiiOakumIgnore ignore;
+            GTEST_SKIP();
+        }
+    }
+
     void validateSourceLocations(OakumAllocation &allocation) {
         EXPECT_STREQ(getDummyFunctionsFilename(), allocation.stackFrames[2].fileName);
         EXPECT_EQ(6, allocation.stackFrames[2].fileLine);

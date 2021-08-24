@@ -16,6 +16,8 @@ public:
     static bool isInitialized();
     static OakumController *getInstance();
 
+    const OakumCapabilities &getCapabilities() { return capabilities; }
+
     static void *allocateMemory(std::size_t size, bool noThrow);
     static void deallocateMemory(void *pointer);
 
@@ -23,8 +25,6 @@ public:
     void releaseAllocation(OakumAllocation &allocation);
     bool hasAllocations();
 
-    bool supportsTrackingStackTraces() const;
-    bool supportsResolvingStackTraceLocations() const;
     bool resolveStackTraceSymbols(OakumAllocation &allocation);
     bool resolveStackTraceSourceLocations(OakumAllocation &allocation);
 
@@ -32,13 +32,14 @@ public:
     bool decrementIgnoreRefcount();
 
 protected:
+    static OakumCapabilities createCapabilities(const OakumInitArgs &initArgs);
     void registerAllocation(OakumAllocation info);
     void registerDeallocation(void *pointer);
     bool getIgnoreState();
 
     auto getAllocationsLock() {
         std::unique_lock lock{allocationsLock, std::defer_lock};
-        if (initArgs.threadSafe) {
+        if (capabilities.threadSafe) {
             lock.lock();
         }
         return lock;
@@ -50,8 +51,7 @@ private:
     static inline std::unique_ptr<OakumController> instance = {};
     static inline thread_local size_t ignoreRefcount = false;
 
-    const OakumInitArgs initArgs;
-    const bool resolvingSourceLocationSupported;
+    const OakumCapabilities capabilities;
     std::atomic<OakumAllocationIdType> allocationIdCounter = {};
     std::recursive_mutex allocationsLock = {};
     std::unordered_map<void *, OakumAllocation> allocations = {};

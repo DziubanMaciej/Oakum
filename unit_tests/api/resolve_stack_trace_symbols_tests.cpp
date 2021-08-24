@@ -61,6 +61,13 @@ TEST_F(OakumResolveStackTraceSymbolsTest, givenSymbolsAlreadyResolvedWhenOakumRe
 }
 
 TEST_F(OakumResolveStackTraceSymbolsTest, givenSourceLocationsResolvedWhenOakumResolveStackTraceSymbolsIsCalledThenReturnCorrectStackTrace) {
+    OakumCapabilities capabilities{};
+    EXPECT_OAKUM_SUCCESS(oakumGetCapabilities(&capabilities));
+    if (!capabilities.supportStackTracesSourceLocations) {
+        RaiiOakumIgnore ignore;
+        GTEST_SKIP();
+    }
+
     auto memory = dummyFunctionA();
 
     OakumAllocation *allocations = nullptr;

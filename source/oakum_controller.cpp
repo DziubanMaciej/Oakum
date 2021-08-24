@@ -12,9 +12,15 @@ struct RaiiOakumIgnore {
 };
 
 namespace Oakum {
-OakumController::OakumController(const OakumInitArgs &initArgs)
-    : initArgs(initArgs),
-      resolvingSourceLocationSupported(StackTraceHelper::supportsSourceLocations()) {}
+OakumController::OakumController(const OakumInitArgs &initArgs) : capabilities(createCapabilities(initArgs)) {}
+
+OakumCapabilities OakumController::createCapabilities(const OakumInitArgs &initArgs) {
+    OakumCapabilities capabilities{};
+    capabilities.supportStackTraces = initArgs.trackStackTraces;
+    capabilities.supportStackTracesSourceLocations = initArgs.trackStackTraces && StackTraceHelper::supportsSourceLocations();
+    capabilities.threadSafe = initArgs.threadSafe;
+    return capabilities;
+}
 
 void OakumController::initialize(const OakumInitArgs &initArgs) {
     FATAL_ERROR_IF(isInitialized(), "Multiple Oakum initialization");
@@ -79,7 +85,7 @@ void OakumController::deallocateMemory(void *pointer) {
 void OakumController::OakumController::registerAllocation(OakumAllocation info) {
     info.allocationId = this->allocationIdCounter++;
     StackTraceHelper::initializeFrames(info.stackFrames, info.stackFramesCount);
-    if (supportsTrackingStackTraces()) {
+    if (capabilities.supportStackTraces) {
         StackTraceHelper::captureFrames(info.stackFrames, info.stackFramesCount);
     }
 
@@ -134,16 +140,8 @@ bool OakumController::hasAllocations() {
     return this->allocations.size();
 }
 
-bool OakumController::supportsTrackingStackTraces() const {
-    return this->initArgs.trackStackTraces;
-}
-
-bool OakumController::supportsResolvingStackTraceLocations() const {
-    return resolvingSourceLocationSupported;
-}
-
 bool OakumController::resolveStackTraceSymbols(OakumAllocation &allocation) {
-    DEBUG_ERROR_IF(!supportsTrackingStackTraces());
+    DEBUG_ERROR_IF(!this->capabilities.supportStackTraces);
     if (allocation.stackFramesCount != 0 && allocation.stackFrames[0].symbolName == nullptr) {
         return StackTraceHelper::resolveSymbols(allocation.stackFrames, allocation.stackFramesCount);
     }
@@ -152,7 +150,7 @@ bool OakumController::resolveStackTraceSymbols(OakumAllocation &allocation) {
 
 bool OakumController::resolveStackTraceSourceLocations(OakumAllocation &allocation) {
     DEBUG_ERROR_IF(!supportsTrackingStackTraces());
-    DEBUG_ERROR_IF(!supportsResolvingStackTraceLocations());
+    DEBUG_ERROR_IF(!this->capabilities.supportStackTracesSourceLocations);
     if (allocation.stackFramesCount != 0 && allocation.stackFrames[0].fileName == nullptr) {
         return StackTraceHelper::resolveSourceLocations(allocation.stackFrames, allocation.stackFramesCount);
     }

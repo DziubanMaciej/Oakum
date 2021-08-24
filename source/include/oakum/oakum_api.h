@@ -9,6 +9,12 @@ struct OakumInitArgs {
     bool threadSafe;
 };
 
+struct OakumCapabilities {
+    bool supportStackTraces;
+    bool supportStackTracesSourceLocations;
+    bool threadSafe;
+};
+
 using OakumAllocationIdType = uint64_t;
 
 #ifndef OAKUM_MAX_STACK_FRAMES_COUNT
@@ -44,6 +50,8 @@ enum OakumResult {
 
 OakumResult oakumInit(const OakumInitArgs *args);
 OakumResult oakumDeinit(bool requireNoLeaks);
+
+OakumResult oakumGetCapabilities(OakumCapabilities *outCapabilities);
 
 OakumResult oakumDetectLeaks();
 

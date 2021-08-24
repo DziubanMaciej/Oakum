@@ -66,7 +66,7 @@ bool StackTraceHelper::resolveSymbols(OakumStackFrame *frames, size_t framesCoun
         OakumStackFrame &frame = frames[frameIndex];
 
         Dl_info dlInfo = {};
-        if (dladdr(frame.address, &dlInfo) == 0) {
+        if (dladdr(frame.address, &dlInfo) != 0) {
             demangleAndSetupString(frame.symbolName, dlInfo.dli_sname);
         } else {
             result = false;
