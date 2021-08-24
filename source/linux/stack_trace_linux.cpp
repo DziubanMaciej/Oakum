@@ -2,10 +2,10 @@
 #define _GNU_SOURCE
 #endif
 
+#include "error.h"
 #include "stack_trace.h"
 
 #include "oakum/oakum_api.h"
-#include "error.h"
 
 #include <algorithm>
 #include <cstdlib>
@@ -16,7 +16,6 @@
 #include <link.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string_view>
 
 static void setupString(char *&destination, const char *source) {
     const size_t sourceSize = strlen(source);
@@ -29,22 +28,15 @@ void demangleAndSetupString(char *&destination, const char *source) {
         return;
     }
 
-    int status {};
+    int status{};
     char *demangled = abi::__cxa_demangle(source, 0, 0, &status);
     FATAL_ERROR_IF(status != 0, "Demangling of symbol \"", source, "\" failed. status=", status);
     setupString(destination, demangled);
     free(demangled);
 }
 
-void setupStackFrameInfo(OakumStackFrame &frame, void *address) {
-    Dl_info dlInfo = {};
-    link_map *linkMap = nullptr;
-    dladdr1(address, &dlInfo, reinterpret_cast<void**>(&linkMap), RTLD_DL_LINKMAP); // TODO: check error code
-
-    demangleAndSetupString(frame.symbolName, dlInfo.dli_sname);
-
-    const size_t addressVma =  reinterpret_cast<size_t>(address) - linkMap->l_addr;
-    printf("{.address=%p   .symbolName=%s    vma=%zx     file=%s  }\n", address, frame.symbolName, addressVma, dlInfo.dli_fname);
+bool StackTraceHelper::supportsSourceLocations() {
+    return false;
 }
 
 void StackTraceHelper::initializeFrames(OakumStackFrame *frames, size_t &framesCount) {
@@ -68,17 +60,23 @@ void StackTraceHelper::captureFrames(OakumStackFrame *frames, size_t &framesCoun
     }
 }
 
-bool StackTraceHelper::resolveFrames(OakumStackFrame *frames, size_t framesCount) {
-    void *frameAddresses[OAKUM_MAX_STACK_FRAMES_COUNT] = {};
+bool StackTraceHelper::resolveSymbols(OakumStackFrame *frames, size_t framesCount) {
+    bool result = true;
     for (size_t frameIndex = 0; frameIndex < framesCount; frameIndex++) {
-        frameAddresses[frameIndex] = frames[frameIndex].address;
-    }
-    char **symbols = backtrace_symbols(frameAddresses, framesCount);
+        OakumStackFrame &frame = frames[frameIndex];
 
-    for (size_t frameIndex = 0; frameIndex < framesCount; frameIndex++) {
-        setupStackFrameInfo(frames[frameIndex], frames[frameIndex].address);
+        Dl_info dlInfo = {};
+        if (dladdr(frame.address, &dlInfo) == 0) {
+            demangleAndSetupString(frame.symbolName, dlInfo.dli_sname);
+        } else {
+            result = false;
+        }
     }
-
-    free(symbols);
     return true;
+}
+
+bool StackTraceHelper::resolveSourceLocations(OakumStackFrame *frames, size_t framesCount) {
+    // const size_t addressVma = reinterpret_cast<size_t>(address) - linkMap->l_addr;
+    FATAL_ERROR("Not implemented");
+    return false;
 }
