@@ -149,7 +149,7 @@ bool OakumController::resolveStackTraceSymbols(OakumAllocation &allocation) {
 }
 
 bool OakumController::resolveStackTraceSourceLocations(OakumAllocation &allocation) {
-    DEBUG_ERROR_IF(!supportsTrackingStackTraces());
+    DEBUG_ERROR_IF(!this->capabilities.supportStackTraces);
     DEBUG_ERROR_IF(!this->capabilities.supportStackTracesSourceLocations);
     if (allocation.stackFramesCount != 0 && allocation.stackFrames[0].fileName == nullptr) {
         return StackTraceHelper::resolveSourceLocations(allocation.stackFrames, allocation.stackFramesCount);
