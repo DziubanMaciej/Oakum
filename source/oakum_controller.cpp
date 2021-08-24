@@ -12,7 +12,9 @@ struct RaiiOakumIgnore {
 };
 
 namespace Oakum {
-OakumController::OakumController(const OakumInitArgs &initArgs) : initArgs(initArgs) {}
+OakumController::OakumController(const OakumInitArgs &initArgs)
+    : initArgs(initArgs),
+      resolvingSourceLocationSupported(StackTraceHelper::supportsSourceLocations()) {}
 
 void OakumController::initialize(const OakumInitArgs &initArgs) {
     FATAL_ERROR_IF(isInitialized(), "Multiple Oakum initialization");
@@ -77,7 +79,7 @@ void OakumController::deallocateMemory(void *pointer) {
 void OakumController::OakumController::registerAllocation(OakumAllocation info) {
     info.allocationId = this->allocationIdCounter++;
     StackTraceHelper::initializeFrames(info.stackFrames, info.stackFramesCount);
-    if (isTrackingStackTraces()) {
+    if (supportsTrackingStackTraces()) {
         StackTraceHelper::captureFrames(info.stackFrames, info.stackFramesCount);
     }
 
@@ -132,13 +134,27 @@ bool OakumController::hasAllocations() {
     return this->allocations.size();
 }
 
-bool OakumController::isTrackingStackTraces() const {
+bool OakumController::supportsTrackingStackTraces() const {
     return this->initArgs.trackStackTraces;
 }
 
-bool OakumController::resolveStackTrace(OakumAllocation &allocation) {
-    if (allocation.stackFramesCount != 0) {
-        return StackTraceHelper::resolveFrames(allocation.stackFrames, allocation.stackFramesCount);
+bool OakumController::supportsResolvingStackTraceLocations() const {
+    return resolvingSourceLocationSupported;
+}
+
+bool OakumController::resolveStackTraceSymbols(OakumAllocation &allocation) {
+    DEBUG_ERROR_IF(!supportsTrackingStackTraces());
+    if (allocation.stackFramesCount != 0 && allocation.stackFrames[0].symbolName == nullptr) {
+        return StackTraceHelper::resolveSymbols(allocation.stackFrames, allocation.stackFramesCount);
+    }
+    return true;
+}
+
+bool OakumController::resolveStackTraceSourceLocations(OakumAllocation &allocation) {
+    DEBUG_ERROR_IF(!supportsTrackingStackTraces());
+    DEBUG_ERROR_IF(!supportsResolvingStackTraceLocations());
+    if (allocation.stackFramesCount != 0 && allocation.stackFrames[0].fileName == nullptr) {
+        return StackTraceHelper::resolveSourceLocations(allocation.stackFrames, allocation.stackFramesCount);
     }
     return true;
 }

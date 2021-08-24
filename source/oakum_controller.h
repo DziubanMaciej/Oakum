@@ -23,8 +23,10 @@ public:
     void releaseAllocation(OakumAllocation &allocation);
     bool hasAllocations();
 
-    bool isTrackingStackTraces() const;
-    bool resolveStackTrace(OakumAllocation &allocation);
+    bool supportsTrackingStackTraces() const;
+    bool supportsResolvingStackTraceLocations() const;
+    bool resolveStackTraceSymbols(OakumAllocation &allocation);
+    bool resolveStackTraceSourceLocations(OakumAllocation &allocation);
 
     void incrementIgnoreRefcount();
     bool decrementIgnoreRefcount();
@@ -49,6 +51,7 @@ private:
     static inline thread_local size_t ignoreRefcount = false;
 
     const OakumInitArgs initArgs;
+    const bool resolvingSourceLocationSupported;
     std::atomic<OakumAllocationIdType> allocationIdCounter = {};
     std::recursive_mutex allocationsLock = {};
     std::unordered_map<void *, OakumAllocation> allocations = {};

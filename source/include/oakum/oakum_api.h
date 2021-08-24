@@ -38,7 +38,7 @@ enum OakumResult {
     OAKUM_NOT_IGNORING,
     OAKUM_INVALID_VALUE,
     OAKUM_LEAKS_DETECTED,
-    OAKUM_CANNOT_GET_STACK_TRACE,
+    OAKUM_RESOLVING_FAILED,
     OAKUM_FEATURE_NOT_SUPPORTED,
 };
 
@@ -50,7 +50,8 @@ OakumResult oakumDetectLeaks();
 OakumResult oakumGetAllocations(OakumAllocation **outAllocations, size_t *outAllocationsCount);
 OakumResult oakumReleaseAllocations(OakumAllocation *allocations, size_t allocationsCount);
 
-OakumResult oakumResolveStackTraces(OakumAllocation *allocations, size_t allocationsCount);
+OakumResult oakumResolveStackTraceSymbols(OakumAllocation *allocations, size_t allocationsCount);
+OakumResult oakumResolveStackTraceSourceLocations(OakumAllocation *allocations, size_t allocationsCount);
 
 OakumResult oakumStartIgnore();
 OakumResult oakumStopIgnore();

@@ -13,12 +13,19 @@ const inline OakumInitArgs defaultInitArgs{
 };
 
 struct OakumTest : ::testing::Test {
-    void SetUp() {
+    void SetUp() override {
         EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
     }
 
     void TearDown() override {
-        EXPECT_OAKUM_SUCCESS(oakumDetectLeaks());
+        if (oakumDetectLeaks() != OAKUM_SUCCESS) {
+            OakumAllocation *allocations{};
+            size_t allocationsCount = 0;
+            EXPECT_OAKUM_SUCCESS(oakumGetAllocations(&allocations, &allocationsCount));
+            EXPECT_OAKUM_SUCCESS(oakumResolveStackTraceSourceLocations(allocations, allocationsCount));
+            EXPECT_OAKUM_SUCCESS(oakumReleaseAllocations(allocations, allocationsCount));
+            EXPECT_OAKUM_SUCCESS(oakumDetectLeaks());
+        }
         EXPECT_OAKUM_SUCCESS(oakumDeinit(false));
     }
 
