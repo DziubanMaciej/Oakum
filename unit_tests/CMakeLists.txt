@@ -7,17 +7,15 @@ add_executable(OakumUnitTests ${SOURCE_FILES})
 
 set(BUILD_GMOCK OFF CACHE BOOL "" FORCE)
 set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 if (UNIX)
     find_package(Threads)
 endif()
 DependencyManager_create_dependency(
     googletest
-    BUILD_METHOD "out_of_project"
+    BUILD_METHOD "in_project"
     DIRECTORY ${CMAKE_SOURCE_DIR}/third_party/googletest
     IS_SUBMODULE
-    ALL_BUILD_TYPES Debug
-    SELECTED_BUILD_TYPE Debug
-    CMAKE_ARGS -DBUILD_GMOCK=OFF -DINSTALL_GTEST=OFF -DBUILD_SHARED_LIBS=ON
 )
 DependencyManager_link_to_dependency_library(OakumUnitTests PRIVATE googletest gtest)
 target_link_libraries(OakumUnitTests PRIVATE Oakum)
