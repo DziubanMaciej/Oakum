@@ -17,13 +17,13 @@ struct OakumResolveStackTraceSourceLocationsTest : OakumTest {
 
     void validateSourceLocations(OakumAllocation &allocation) {
         EXPECT_STREQ(getDummyFunctionsFilename(), allocation.stackFrames[2].fileName);
-        EXPECT_EQ(6, allocation.stackFrames[2].fileLine);
+        EXPECT_EQ(8, allocation.stackFrames[2].fileLine);
 
         EXPECT_STREQ(getDummyFunctionsFilename(), allocation.stackFrames[3].fileName);
-        EXPECT_EQ(10, allocation.stackFrames[3].fileLine);
+        EXPECT_EQ(12, allocation.stackFrames[3].fileLine);
 
         EXPECT_STREQ(getDummyFunctionsFilename(), allocation.stackFrames[4].fileName);
-        EXPECT_EQ(14, allocation.stackFrames[4].fileLine);
+        EXPECT_EQ(16, allocation.stackFrames[4].fileLine);
 
         EXPECT_STREQ(__FILE__, allocation.stackFrames[5].fileName);
     }

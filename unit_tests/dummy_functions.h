@@ -3,6 +3,8 @@
 #include <memory>
 
 inline std::unique_ptr<char> dummyFunctionC() {
+    // intentional comment
+    // do not remove
     return std::make_unique<char>();
 }
 

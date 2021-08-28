@@ -14,6 +14,7 @@
 #include <dlfcn.h>
 #include <execinfo.h>
 #include <link.h>
+#include <sstream>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -39,8 +40,26 @@ void demangleAndSetupString(char *&destination, const char *source) {
     }
 }
 
+std::pair<std::string, size_t> addr2line(const char *binaryName, size_t vma) {
+    std::stringstream hexStream;
+    hexStream << std::hex << vma;
+    std::string vmaString = hexStream.str();
+
+    const std::string output = ChildProcess::runForOutput("addr2line", {"-e", binaryName, vmaString});
+    const size_t colonPos = output.find_first_of(':');
+    const std::string fileNameString = output.substr(0, colonPos);
+    const std::string fileLineString = output.substr(colonPos + 1);
+
+    std::istringstream lineStream{fileLineString};
+    size_t fileLine{};
+    lineStream >> fileLine;
+
+    return {fileNameString, fileLine};
+}
+
 bool StackTraceHelper::supportsSourceLocations() {
-    return false;
+    std::string output = ChildProcess::runForOutput("which", {"addr2line"});
+    return !output.empty();
 }
 
 void StackTraceHelper::initializeFrames(OakumStackFrame *frames, size_t &framesCount) {
@@ -76,11 +95,26 @@ bool StackTraceHelper::resolveSymbols(OakumStackFrame *frames, size_t framesCoun
             result = false;
         }
     }
-    return true;
+    return result;
 }
 
 bool StackTraceHelper::resolveSourceLocations(OakumStackFrame *frames, size_t framesCount) {
-    // const size_t addressVma = reinterpret_cast<size_t>(address) - linkMap->l_addr;
-    FATAL_ERROR("Not implemented");
-    return false;
+    bool result = true;
+    for (size_t frameIndex = 0; frameIndex < framesCount; frameIndex++) {
+        OakumStackFrame &frame = frames[frameIndex];
+
+        Dl_info dlInfo = {};
+        link_map *linkMap = {};
+        if (dladdr1(frame.address, &dlInfo, reinterpret_cast<void **>(&linkMap), RTLD_DL_LINKMAP) != 0) {
+            const char *binaryName = dlInfo.dli_fname;
+            const size_t addressVma = reinterpret_cast<size_t>(frame.address) - linkMap->l_addr;
+            const auto [fileName, fileLine] = addr2line(binaryName, addressVma);
+            setupString(frame.fileName, fileName.c_str());
+            frame.fileLine = fileLine - 1;
+        } else {
+            return result;
+        }
+    }
+
+    return result;
 }
