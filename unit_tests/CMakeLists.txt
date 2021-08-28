@@ -20,4 +20,4 @@ DependencyManager_create_dependency(
 DependencyManager_link_to_dependency_library(OakumUnitTests PRIVATE googletest gtest)
 target_link_libraries(OakumUnitTests PRIVATE Oakum)
 target_compile_features(OakumUnitTests PRIVATE cxx_std_17)
-target_include_directories(OakumUnitTests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(OakumUnitTests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/..)

@@ -2,10 +2,10 @@
 #define _GNU_SOURCE
 #endif
 
-#include "error.h"
-#include "stack_trace.h"
-
 #include "oakum/oakum_api.h"
+#include "source/error.h"
+#include "source/linux/child_process.h"
+#include "source/stack_trace.h"
 
 #include <algorithm>
 #include <cstdlib>
