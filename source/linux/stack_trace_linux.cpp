@@ -30,9 +30,13 @@ void demangleAndSetupString(char *&destination, const char *source) {
 
     int status{};
     char *demangled = abi::__cxa_demangle(source, 0, 0, &status);
-    FATAL_ERROR_IF(status != 0, "Demangling of symbol \"", source, "\" failed. status=", status);
-    setupString(destination, demangled);
-    free(demangled);
+    FATAL_ERROR_IF(status == -3, "Demangling of symbol \"", source, "\" failed. status=", status);
+    if (status != 0) {
+        setupString(destination, source);
+    } else {
+        setupString(destination, demangled);
+        free(demangled);
+    }
 }
 
 bool StackTraceHelper::supportsSourceLocations() {
