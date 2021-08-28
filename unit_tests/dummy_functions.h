@@ -2,20 +2,17 @@
 
 #include <memory>
 
-inline std::unique_ptr<char> dummyFunctionC() {
-    // intentional comment
-    // do not remove
-    return std::make_unique<char>();
-}
+#ifdef __clang__
+#define NO_INLINE_1 [[gnu::noinline]]
+#elif __GNUC__
+#define NO_INLINE_1 [[gnu::noinline]]
+#elif _MSC_VER
+#define NO_INLINE_1
+#else
+#define NO_INLINE_1
+#endif
 
-inline std::unique_ptr<char> dummyFunctionB() {
-    return dummyFunctionC();
-}
-
-inline std::unique_ptr<char> dummyFunctionA() {
-    return dummyFunctionB();
-}
-
-inline const char *getDummyFunctionsFilename() {
-    return __FILE__;
-}
+NO_INLINE_1 std::unique_ptr<char> dummyFunctionC();
+NO_INLINE_1 std::unique_ptr<char> dummyFunctionB();
+NO_INLINE_1 std::unique_ptr<char> dummyFunctionA();
+const char *getDummyFunctionsFilename();

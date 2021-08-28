@@ -7,11 +7,16 @@ struct OakumResolveStackTraceSymbolsTest : OakumTest {
     void validateSymbols(OakumAllocation &allocation) {
         ASSERT_NE(nullptr, allocation.stackFrames[0].symbolName);
 
-        EXPECT_STR_CONTAINS("operator new", allocation.stackFrames[0].symbolName);
-        EXPECT_STR_CONTAINS("make_unique", allocation.stackFrames[1].symbolName);
-        EXPECT_STR_CONTAINS("dummyFunctionC", allocation.stackFrames[2].symbolName);
-        EXPECT_STR_CONTAINS("dummyFunctionB", allocation.stackFrames[3].symbolName);
-        EXPECT_STR_CONTAINS("dummyFunctionA", allocation.stackFrames[4].symbolName);
+        bool found = false;
+        for (int i = 0; i < allocation.stackFramesCount; i++) {
+            if (allocation.stackFrames[i].symbolName != nullptr && strstr(allocation.stackFrames[i].symbolName, "dummyFunctionA")) {
+                EXPECT_STR_CONTAINS("dummyFunctionC", allocation.stackFrames[i - 2].symbolName);
+                EXPECT_STR_CONTAINS("dummyFunctionB", allocation.stackFrames[i - 1].symbolName);
+                found = true;
+                break;
+            }
+        }
+        EXPECT_TRUE(found);
     }
 };
 
