@@ -49,6 +49,9 @@ std::pair<std::string, size_t> addr2line(const char *binaryName, size_t vma) {
     std::istringstream lineStream{fileLineString};
     size_t fileLine{};
     lineStream >> fileLine;
+    if (fileLine > 0) {
+        fileLine--;
+    }
 
     return {fileNameString, fileLine};
 }
@@ -106,7 +109,7 @@ bool StackTraceHelper::resolveSourceLocations(OakumStackFrame *frames, size_t fr
             const size_t addressVma = reinterpret_cast<size_t>(frame.address) - linkMap->l_addr;
             const auto [fileName, fileLine] = addr2line(binaryName, addressVma);
             setupString(frame.fileName, fileName.c_str());
-            frame.fileLine = fileLine - 1;
+            frame.fileLine = fileLine;
         } else {
             return result;
         }
