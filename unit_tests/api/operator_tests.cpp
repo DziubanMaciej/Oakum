@@ -1,4 +1,4 @@
-#include "fixtures.h"
+#include "unit_tests/fixtures.h"
 
 struct OakumOperatorTest : OakumTest {
     size_t getHugeMemorySize() {

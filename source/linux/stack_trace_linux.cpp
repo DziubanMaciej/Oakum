@@ -1,9 +1,5 @@
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
-
-#include "oakum/oakum_api.h"
 #include "source/error.h"
+#include "source/include/oakum/oakum_api.h"
 #include "source/linux/child_process.h"
 #include "source/stack_trace.h"
 

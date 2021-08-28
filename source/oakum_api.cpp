@@ -1,6 +1,5 @@
-#include "oakum_controller.h"
-
-#include "oakum/oakum_api.h"
+#include "source/include/oakum/oakum_api.h"
+#include "source/oakum_controller.h"
 
 #define OAKUM_VERIFY(condition, errorCode) \
     if (condition) {                       \

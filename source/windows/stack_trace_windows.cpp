@@ -1,7 +1,6 @@
-#include "error.h"
-#include "stack_trace.h"
-
-#include "oakum/oakum_api.h"
+#include "source/error.h"
+#include "source/include/oakum/oakum_api.h"
+#include "source/stack_trace.h"
 
 #include <Windows.h>
 #include <algorithm>

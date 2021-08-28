@@ -1,4 +1,4 @@
-#include "fixtures.h"
+#include "unit_tests/fixtures.h"
 
 TEST(OakumInitTest, givenOakumInitAndDeinitCalledWhenEnvironmentIsCleanThenSuccessIsReturned) {
     EXPECT_OAKUM_SUCCESS(oakumInit(&defaultInitArgs));

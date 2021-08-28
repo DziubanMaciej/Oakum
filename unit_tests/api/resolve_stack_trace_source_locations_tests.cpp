@@ -1,5 +1,5 @@
-#include "dummy_functions.h"
-#include "fixtures.h"
+#include "unit_tests/dummy_functions.h"
+#include "unit_tests/fixtures.h"
 
 #define EXPECT_STR_CONTAINS(substring, string) EXPECT_NE(nullptr, strstr((string), (substring)))
 
