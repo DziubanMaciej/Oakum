@@ -1,4 +1,4 @@
-#include "unit_tests/dummy_functions.h"
+#include "unit_tests/allocate_memory_function.h"
 #include "unit_tests/fixtures.h"
 #include "unit_tests/mock_syscalls.h"
 
@@ -24,7 +24,7 @@ TEST_F(OakumResolveStackTraceSymbolsTest, givenNullArgumentsWhenCallingOakumReso
 TEST_F(OakumResolveStackTraceSymbolsTest, givenSymbolsResolvingSuccessWhenOakumResolveStackTraceSymbolsIsCalledThenReturnCorrectStackTrace) {
     RaiiSyscallsBackup backup = MockSyscalls::mockSymbolResolvingSuccess("mySymbol");
 
-    auto memory = dummyFunctionA();
+    auto memory = allocateMemoryFunction();
 
     OakumAllocation *allocations = nullptr;
     size_t allocationCount = 0u;
@@ -42,7 +42,7 @@ TEST_F(OakumResolveStackTraceSymbolsTest, givenSymbolsResolvingSuccessWhenOakumR
 TEST_F(OakumResolveStackTraceSymbolsTest, givenSymbolsResolvingFailWhenOakumResolveStackTraceSymbolsIsCalledThenReturnError) {
     RaiiSyscallsBackup backup = MockSyscalls::mockSymbolResolvingFail();
 
-    auto memory = dummyFunctionA();
+    auto memory = allocateMemoryFunction();
 
     OakumAllocation *allocations = nullptr;
     size_t allocationCount = 0u;
@@ -59,7 +59,7 @@ using OakumResolveStackTraceSymbolsWithFallbackStringsTest = OakumTestWithFallba
 TEST_F(OakumResolveStackTraceSymbolsWithFallbackStringsTest, givenSymbolsResolvingSuccessAndFallbackSymbolIsPassWhenOakumResolveStackTraceSymbolsIsCalledThenUseResolvedSymbol) {
     RaiiSyscallsBackup backup = MockSyscalls::mockSymbolResolvingSuccess("mySymbol");
 
-    auto memory = dummyFunctionA();
+    auto memory = allocateMemoryFunction();
 
     OakumAllocation *allocations = nullptr;
     size_t allocationCount = 0u;
@@ -77,7 +77,7 @@ TEST_F(OakumResolveStackTraceSymbolsWithFallbackStringsTest, givenSymbolsResolvi
 TEST_F(OakumResolveStackTraceSymbolsWithFallbackStringsTest, givenSymbolsResolvingFailAndFallbackSymbolIsPassWhenOakumResolveStackTraceSymbolsIsCalledThenUseFallbackSymbol) {
     RaiiSyscallsBackup backup = MockSyscalls::mockSymbolResolvingFail();
 
-    auto memory = dummyFunctionA();
+    auto memory = allocateMemoryFunction();
 
     OakumAllocation *allocations = nullptr;
     size_t allocationCount = 0u;
@@ -95,7 +95,7 @@ TEST_F(OakumResolveStackTraceSymbolsWithFallbackStringsTest, givenSymbolsResolvi
 TEST_F(OakumResolveStackTraceSymbolsTest, givenSymbolsAlreadyResolvedWhenOakumResolveStackTraceSymbolsIsCalledThenReturnCorrectStackTrace) {
     RaiiSyscallsBackup backup1 = MockSyscalls::mockSymbolResolvingSuccess("mySymbol");
 
-    auto memory = dummyFunctionA();
+    auto memory = allocateMemoryFunction();
 
     OakumAllocation *allocations = nullptr;
     size_t allocationCount = 0u;
@@ -129,7 +129,7 @@ TEST_F(OakumResolveStackTraceSymbolsTest, givenSourceLocationsResolvedWhenOakumR
         GTEST_SKIP();
     }
 
-    auto memory = dummyFunctionA();
+    auto memory = allocateMemoryFunction();
 
     OakumAllocation *allocations = nullptr;
     size_t allocationCount = 0u;

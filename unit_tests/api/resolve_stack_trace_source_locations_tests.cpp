@@ -1,4 +1,4 @@
-#include "unit_tests/dummy_functions.h"
+#include "unit_tests/allocate_memory_function.h"
 #include "unit_tests/fixtures.h"
 #include "unit_tests/mock_syscalls.h"
 
@@ -48,7 +48,7 @@ TEST_F(OakumResolveStackTraceSourceLocationsTest, givenNullArgumentsWhenCallingO
 TEST_F(OakumResolveStackTraceSourceLocationsTest, givenSymbolsResolvingSuccessWhenOakumResolveStackTraceSourceLocationsIsCalledThenReturnCorrectStackTrace) {
     RaiiSyscallsBackup backup = MockSyscalls::mockSourceLocationResolvingSuccess("myFile", 19);
 
-    auto memory = dummyFunctionA();
+    auto memory = allocateMemoryFunction();
 
     OakumAllocation *allocations = nullptr;
     size_t allocationCount = 0u;
@@ -67,7 +67,7 @@ TEST_F(OakumResolveStackTraceSourceLocationsTest, givenSymbolsResolvingSuccessWh
 TEST_F(OakumResolveStackTraceSourceLocationsTest, givenSymbolsResolvingFailWhenOakumResolveStackTraceSourceLocationsIsCalledThenError) {
     RaiiSyscallsBackup backup = MockSyscalls::mockSourceLocationResolvingFail();
 
-    auto memory = dummyFunctionA();
+    auto memory = allocateMemoryFunction();
 
     OakumAllocation *allocations = nullptr;
     size_t allocationCount = 0u;
@@ -84,7 +84,7 @@ using OakumResolveStackTraceSourceLocationsWithFallbackStringsTest = OakumTestWi
 TEST_F(OakumResolveStackTraceSourceLocationsWithFallbackStringsTest, givenSymbolsResolvingSuccessAndFallbackFileIsPassedWhenOakumResolveStackTraceSourceLocationsIsCalledThenUseResolvedFile) {
     RaiiSyscallsBackup backup = MockSyscalls::mockSourceLocationResolvingSuccess("myFile", 19);
 
-    auto memory = dummyFunctionA();
+    auto memory = allocateMemoryFunction();
 
     OakumAllocation *allocations = nullptr;
     size_t allocationCount = 0u;
@@ -100,11 +100,10 @@ TEST_F(OakumResolveStackTraceSourceLocationsWithFallbackStringsTest, givenSymbol
     EXPECT_OAKUM_SUCCESS(oakumReleaseAllocations(allocations, allocationCount));
 }
 
-
 TEST_F(OakumResolveStackTraceSourceLocationsWithFallbackStringsTest, givenSymbolsResolvingFailAndFallbackFileIsPassedWhenOakumResolveStackTraceSourceLocationsIsCalledThenUseFallbackFile) {
     RaiiSyscallsBackup backup = MockSyscalls::mockSourceLocationResolvingFail();
 
-    auto memory = dummyFunctionA();
+    auto memory = allocateMemoryFunction();
 
     OakumAllocation *allocations = nullptr;
     size_t allocationCount = 0u;
@@ -123,7 +122,7 @@ TEST_F(OakumResolveStackTraceSourceLocationsWithFallbackStringsTest, givenSymbol
 TEST_F(OakumResolveStackTraceSourceLocationsTest, givenSourceLocationsAlreadyResolvedWhenOakumResolveStackTraceSourceLocationsIsCalledThenReturnCorrectStackTrace) {
     RaiiSyscallsBackup backup1 = MockSyscalls::mockSourceLocationResolvingSuccess("myFile", 19);
 
-    auto memory = dummyFunctionA();
+    auto memory = allocateMemoryFunction();
 
     OakumAllocation *allocations = nullptr;
     size_t allocationCount = 0u;
@@ -152,7 +151,7 @@ TEST_F(OakumResolveStackTraceSourceLocationsTest, givenSymbolsResolvedWhenOakumR
     RaiiSyscallsBackup backup1 = MockSyscalls::mockSourceLocationResolvingSuccess("myFile", 19);
     RaiiSyscallsBackup backup2 = MockSyscalls::mockSymbolResolvingSuccess("mySymbol");
 
-    auto memory = dummyFunctionA();
+    auto memory = allocateMemoryFunction();
 
     OakumAllocation *allocations = nullptr;
     size_t allocationCount = 0u;

@@ -12,7 +12,7 @@
 #define NO_INLINE_1
 #endif
 
-NO_INLINE_1 std::unique_ptr<char> dummyFunctionC();
-NO_INLINE_1 std::unique_ptr<char> dummyFunctionB();
-NO_INLINE_1 std::unique_ptr<char> dummyFunctionA();
+NO_INLINE_1 std::unique_ptr<char> allocateMemoryFunction2();
+NO_INLINE_1 std::unique_ptr<char> allocateMemoryFunction1();
+NO_INLINE_1 std::unique_ptr<char> allocateMemoryFunction();
 const char *getDummyFunctionsFilename();
