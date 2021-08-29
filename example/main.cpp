@@ -57,7 +57,11 @@ int main() {
         std::cout << "  id=" << allocation.allocationId << ", size=" << allocation.size << ", capturedStackFrames=" << allocation.stackFramesCount << '\n';
         for (size_t stackFrameIndex = 0u; stackFrameIndex < allocation.stackFramesCount; stackFrameIndex++) {
             OakumStackFrame &frame = allocation.stackFrames[stackFrameIndex];
-            std::cout << "    " << frame.symbolName << " in file " << frame.fileName << ":" << frame.fileLine << "\n";
+            std::cout << "    " << frame.symbolName;
+            if (frame.fileName) {
+                std::cout << " in file " << frame.fileName << ":" << frame.fileLine;
+            }
+            std::cout << "\n";
         }
         std::cout << '\n';
     }
