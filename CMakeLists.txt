@@ -47,6 +47,7 @@ macro (append_sources LIST_NAME SET_IN_PARENT_SCOPE)
     endif()
 endmacro()
 
+add_subdirectory(third_party)
 add_subdirectory(source)
 if (OAKUM_BUILD_EXAMPLE)
     add_subdirectory(example)

@@ -3,19 +3,6 @@ add_subdirectories()
 
 source_group (TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${OAKUM_UNIT_TESTS_SOURCES})
 add_executable(OakumUnitTests ${OAKUM_UNIT_TESTS_SOURCES})
-
-set(BUILD_GMOCK OFF CACHE BOOL "" FORCE)
-set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
-set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
-if (UNIX)
-    find_package(Threads)
-endif()
-DependencyManager_create_dependency(
-    googletest
-    BUILD_METHOD "in_project"
-    DIRECTORY ${CMAKE_SOURCE_DIR}/third_party/googletest
-    IS_SUBMODULE
-)
 DependencyManager_link_to_dependency_library(OakumUnitTests PRIVATE googletest gtest)
 target_link_libraries(OakumUnitTests PRIVATE Oakum)
 target_compile_features(OakumUnitTests PRIVATE cxx_std_17)
