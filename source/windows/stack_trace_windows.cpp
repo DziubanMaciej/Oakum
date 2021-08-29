@@ -1,11 +1,9 @@
 #include "source/error.h"
 #include "source/include/oakum/oakum_api.h"
 #include "source/stack_trace.h"
+#include "source/syscalls.h"
 
-#include <Windows.h>
-#include <algorithm>
-#include <dbghelp.h>
-
+namespace Oakum {
 bool StackTraceHelper::supportsSourceLocations() {
     return true;
 }
@@ -40,7 +38,7 @@ bool StackTraceHelper::resolveSymbols(OakumStackFrame *frames, size_t framesCoun
     for (size_t frameIndex = 0; frameIndex < framesCount; frameIndex++) {
         const DWORD64 address = reinterpret_cast<DWORD64>(frames[frameIndex].address);
 
-        if (SymFromAddr(process, address, 0, &symbolInfo.asSymbolInfo)) {
+        if (syscalls.SymFromAddr(process, address, 0, &symbolInfo.asSymbolInfo)) {
             setupString(frames[frameIndex].symbolName, symbolInfo.asSymbolInfo.Name);
         } else if (fallbackSymbolName.has_value()) {
             setupString(frames[frameIndex].symbolName, fallbackSymbolName.value().c_str());
@@ -67,7 +65,7 @@ bool StackTraceHelper::resolveSourceLocations(OakumStackFrame *frames, size_t fr
     for (size_t frameIndex = 0; frameIndex < framesCount; frameIndex++) {
         const DWORD64 address = reinterpret_cast<DWORD64>(frames[frameIndex].address);
 
-        if (SymGetLineFromAddr64(process, address, &displacement, &lineInfo)) {
+        if (syscalls.SymGetLineFromAddr64(process, address, &displacement, &lineInfo)) {
             setupString(frames[frameIndex].fileName, lineInfo.FileName);
             frames[frameIndex].fileLine = lineInfo.LineNumber;
         } else if (fallbackSourceFileName.has_value()) {
@@ -78,3 +76,4 @@ bool StackTraceHelper::resolveSourceLocations(OakumStackFrame *frames, size_t fr
     }
     return result;
 }
+} // namespace Oakum

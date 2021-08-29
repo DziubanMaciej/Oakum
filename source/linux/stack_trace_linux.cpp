@@ -1,31 +1,23 @@
 #include "source/error.h"
 #include "source/include/oakum/oakum_api.h"
-#include "source/linux/child_process.h"
 #include "source/stack_trace.h"
+#include "source/syscalls.h"
 
-#include <algorithm>
-#include <cstdlib>
-#include <cstring>
-#include <cxxabi.h>
-#include <dlfcn.h>
-#include <execinfo.h>
-#include <link.h>
 #include <sstream>
-#include <stdio.h>
-#include <stdlib.h>
 
+namespace Oakum {
 static void demangleAndSetupString(char *&destination, const char *source) {
     if (source == nullptr) {
         return;
     }
 
     int status{};
-    char *demangled = abi::__cxa_demangle(source, 0, 0, &status);
+    char *demangled = syscalls.demangleSymbol(source, 0, 0, &status);
     FATAL_ERROR_IF(status == -3, "Demangling of symbol \"", source, "\" failed. status=", status);
     if (status != 0) {
-        setupString(destination, source);
+        StackTraceHelper::setupString(destination, source);
     } else {
-        setupString(destination, demangled);
+        StackTraceHelper::setupString(destination, demangled);
         free(demangled);
     }
 }
@@ -35,7 +27,7 @@ static std::pair<std::string, size_t> addr2line(const char *binaryName, size_t v
     hexStream << std::hex << vma;
     std::string vmaString = hexStream.str();
 
-    const std::string output = ChildProcess::runForOutput("addr2line", {"-e", binaryName, vmaString});
+    const std::string output = syscalls.runProcessForOutput("addr2line", {"-e", binaryName, vmaString});
     const size_t colonPos = output.find_first_of(':');
     const std::string fileNameString = output.substr(0, colonPos);
     const std::string fileLineString = output.substr(colonPos + 1);
@@ -51,7 +43,7 @@ static std::pair<std::string, size_t> addr2line(const char *binaryName, size_t v
 }
 
 bool StackTraceHelper::supportsSourceLocations() {
-    std::string output = ChildProcess::runForOutput("which", {"addr2line"});
+    std::string output = syscalls.runProcessForOutput("which", {"addr2line"});
     return !output.empty();
 }
 
@@ -71,7 +63,7 @@ bool StackTraceHelper::resolveSymbols(OakumStackFrame *frames, size_t framesCoun
         OakumStackFrame &frame = frames[frameIndex];
 
         Dl_info dlInfo = {};
-        if (dladdr(frame.address, &dlInfo) != 0) {
+        if (syscalls.dladdr(frame.address, &dlInfo) != 0) {
             demangleAndSetupString(frame.symbolName, dlInfo.dli_sname);
         } else if (fallbackSymbolName.has_value()) {
             setupString(frames[frameIndex].symbolName, fallbackSymbolName.value().c_str());
@@ -89,7 +81,7 @@ bool StackTraceHelper::resolveSourceLocations(OakumStackFrame *frames, size_t fr
 
         Dl_info dlInfo = {};
         link_map *linkMap = {};
-        if (dladdr1(frame.address, &dlInfo, reinterpret_cast<void **>(&linkMap), RTLD_DL_LINKMAP) != 0) {
+        if (syscalls.dladdr1(frame.address, &dlInfo, reinterpret_cast<void **>(&linkMap), RTLD_DL_LINKMAP) != 0) {
             const char *binaryName = dlInfo.dli_fname;
             const size_t addressVma = reinterpret_cast<size_t>(frame.address) - linkMap->l_addr;
             const auto [fileName, fileLine] = addr2line(binaryName, addressVma);
@@ -106,3 +98,4 @@ bool StackTraceHelper::resolveSourceLocations(OakumStackFrame *frames, size_t fr
 
     return result;
 }
+} // namespace Oakum

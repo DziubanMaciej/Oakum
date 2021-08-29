@@ -6,6 +6,7 @@
 
 struct OakumStackFrame;
 
+namespace Oakum {
 struct StackTraceHelper {
     StackTraceHelper() = delete;
     static bool supportsSourceLocations();
@@ -15,7 +16,8 @@ struct StackTraceHelper {
     static bool resolveSymbols(OakumStackFrame *frames, size_t framesCount, const std::optional<std::string> &fallbackSymbolName);
     static bool resolveSourceLocations(OakumStackFrame *frames, size_t framesCount, const std::optional<std::string> &fallbackSourceFileName);
 
-private:
     static void setupString(char *&destination, const char *source);
+private:
     constexpr static inline unsigned int skippedFrames = 3;
 };
+} // namespace Oakum
