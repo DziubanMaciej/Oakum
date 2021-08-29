@@ -1,15 +1,31 @@
 #include "unit_tests/allocate_memory_function.h"
 
-std::unique_ptr<char> allocateMemoryFunction2() {
+#include <iostream>
+
+std::unique_ptr<char[]> allocateMemoryFunction2(size_t size) {
     // intentional comment
     // do not remove
-    return std::unique_ptr<char>(std::make_unique<char>());
+    return std::unique_ptr<char[]>(new char[size]());
 }
 
-std::unique_ptr<char> allocateMemoryFunction1() {
-    return allocateMemoryFunction2();
+std::unique_ptr<char[]> allocateMemoryFunction1(size_t size) {
+    return allocateMemoryFunction2(size);
 }
 
-std::unique_ptr<char> allocateMemoryFunction() {
-    return allocateMemoryFunction1();
+std::unique_ptr<char[]> allocateMemoryFunction(size_t size) {
+    return allocateMemoryFunction1(size);
+}
+
+std::unique_ptr<char[]> allocateMemoryFunctionNoThrow2(size_t size) {
+    // intentional comment
+    // do not remove
+    return std::unique_ptr<char[]>(new (std::nothrow) char[size]);
+}
+
+std::unique_ptr<char[]> allocateMemoryFunctionNoThrow1(size_t size) {
+    return allocateMemoryFunctionNoThrow2(size);
+}
+
+std::unique_ptr<char[]> allocateMemoryFunctionNoThrow(size_t size) {
+    return allocateMemoryFunctionNoThrow1(size);
 }

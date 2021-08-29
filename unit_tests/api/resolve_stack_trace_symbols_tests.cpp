@@ -150,7 +150,7 @@ TEST_F(OakumResolveStackTraceSymbolsTest, givenSourceLocationsResolvedWhenOakumR
 using OakumResolveStackTraceSymbolsWithoutStackTracesTest = OakumTestWithoutStackTraces;
 
 TEST_F(OakumResolveStackTraceSymbolsWithoutStackTracesTest, givenNoStackTracesWhenCallingResolveStackTraceSymbolsThenReturnFeatureUnsupported) {
-    char *memory = new char;
+    auto memory = allocateMemoryFunction();
 
     OakumAllocation *allocations = nullptr;
     size_t allocationCount = 0u;
@@ -161,5 +161,4 @@ TEST_F(OakumResolveStackTraceSymbolsWithoutStackTracesTest, givenNoStackTracesWh
     EXPECT_EQ(OAKUM_FEATURE_NOT_SUPPORTED, oakumResolveStackTraceSymbols(allocations, allocationCount));
 
     EXPECT_OAKUM_SUCCESS(oakumReleaseAllocations(allocations, allocationCount));
-    delete memory;
 }

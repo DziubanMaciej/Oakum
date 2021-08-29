@@ -1,3 +1,4 @@
+#include "unit_tests/allocate_memory_function.h"
 #include "unit_tests/fixtures.h"
 
 TEST(OakumInitTest, givenOakumInitAndDeinitCalledWhenEnvironmentIsCleanThenSuccessIsReturned) {
@@ -24,8 +25,8 @@ TEST(OakumInitTest, givenLeaksDetectionEnabledWhenOakumDeinitIsCalledThenDetectL
     EXPECT_OAKUM_SUCCESS(oakumDeinit(true));
 
     EXPECT_OAKUM_SUCCESS(oakumInit(&defaultInitArgs));
-    int *a = new int;
+    auto memory = allocateMemoryFunction();
     EXPECT_EQ(OAKUM_LEAKS_DETECTED, oakumDeinit(true));
-    delete a;
+    memory.reset();
     EXPECT_OAKUM_SUCCESS(oakumDeinit(true));
 }

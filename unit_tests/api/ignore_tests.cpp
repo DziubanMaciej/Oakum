@@ -1,4 +1,5 @@
-#include "fixtures.h"
+#include "unit_tests/allocate_memory_function.h"
+#include "unit_tests/fixtures.h"
 
 using OakumIgnoreTest = OakumTest;
 
@@ -16,7 +17,7 @@ TEST_F(OakumIgnoreTest, givenOakumIgnoreIsStartedWhenMemoryIsAllocatedThenItIsNo
     size_t allocationCount = 0u;
     EXPECT_OAKUM_SUCCESS(oakumStartIgnore());
 
-    char *a = new char;
+    auto memory0 = allocateMemoryFunction();
     EXPECT_OAKUM_SUCCESS(oakumGetAllocations(&allocations, &allocationCount));
     EXPECT_EQ(nullptr, allocations);
     EXPECT_EQ(0u, allocationCount);
@@ -24,14 +25,11 @@ TEST_F(OakumIgnoreTest, givenOakumIgnoreIsStartedWhenMemoryIsAllocatedThenItIsNo
 
     EXPECT_OAKUM_SUCCESS(oakumStopIgnore());
 
-    char *b = new char;
+    auto memory1 = allocateMemoryFunction();
     EXPECT_OAKUM_SUCCESS(oakumGetAllocations(&allocations, &allocationCount));
     EXPECT_NE(nullptr, allocations);
     EXPECT_EQ(1u, allocationCount);
     EXPECT_OAKUM_SUCCESS(oakumReleaseAllocations(allocations, allocationCount));
-
-    delete a;
-    delete b;
 }
 
 TEST_F(OakumIgnoreTest, givenOakumIgnoreIsCalledMultipleTimesWhenMemoryIsAllocatedThenItIgnoreStateIsRefcounted) {
@@ -41,7 +39,7 @@ TEST_F(OakumIgnoreTest, givenOakumIgnoreIsCalledMultipleTimesWhenMemoryIsAllocat
     EXPECT_OAKUM_SUCCESS(oakumStartIgnore());
     EXPECT_OAKUM_SUCCESS(oakumStartIgnore());
 
-    char *a = new char; // Ignore count = 3
+    auto memory0 = allocateMemoryFunction(); // Ignore count = 3
     EXPECT_OAKUM_SUCCESS(oakumGetAllocations(&allocations, &allocationCount));
     EXPECT_EQ(nullptr, allocations);
     EXPECT_EQ(0u, allocationCount);
@@ -50,7 +48,7 @@ TEST_F(OakumIgnoreTest, givenOakumIgnoreIsCalledMultipleTimesWhenMemoryIsAllocat
     EXPECT_OAKUM_SUCCESS(oakumStopIgnore());
     EXPECT_OAKUM_SUCCESS(oakumStopIgnore());
 
-    char *b = new char; // Ignore count = 1
+    auto memory1 = allocateMemoryFunction(); // Ignore count = 1
     EXPECT_OAKUM_SUCCESS(oakumGetAllocations(&allocations, &allocationCount));
     EXPECT_EQ(nullptr, allocations);
     EXPECT_EQ(0u, allocationCount);
@@ -58,15 +56,11 @@ TEST_F(OakumIgnoreTest, givenOakumIgnoreIsCalledMultipleTimesWhenMemoryIsAllocat
 
     EXPECT_OAKUM_SUCCESS(oakumStopIgnore());
 
-    char *c = new char; // Ignore count = 0
+    auto memory2 = allocateMemoryFunction(); // Ignore count = 0
     EXPECT_OAKUM_SUCCESS(oakumGetAllocations(&allocations, &allocationCount));
     EXPECT_NE(nullptr, allocations);
     EXPECT_EQ(1u, allocationCount);
     EXPECT_OAKUM_SUCCESS(oakumReleaseAllocations(allocations, allocationCount));
-
-    delete a;
-    delete b;
-    delete c;
 }
 
 TEST_F(OakumIgnoreTest, givenOakumStopIgnoreIsCalledWhenIgnoreCountIsZeroThenReturnError) {

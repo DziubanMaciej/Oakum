@@ -1,3 +1,4 @@
+#include "unit_tests/allocate_memory_function.h"
 #include "unit_tests/fixtures.h"
 
 struct OakumOperatorTest : OakumTest {
@@ -7,6 +8,6 @@ struct OakumOperatorTest : OakumTest {
 };
 
 TEST_F(OakumOperatorTest, givenNoThrowNotSpecifiedWhenMemoryAllocationFailsThenThrowBadAlloc) {
-    EXPECT_THROW(new char[getHugeMemorySize()], std::bad_alloc);
-    EXPECT_EQ(0u, new (std::nothrow) char[getHugeMemorySize()]);
+    EXPECT_THROW(allocateMemoryFunction(getHugeMemorySize()), std::bad_alloc);
+    EXPECT_EQ(nullptr, allocateMemoryFunctionNoThrow(getHugeMemorySize()));
 }

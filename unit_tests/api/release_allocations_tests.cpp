@@ -1,3 +1,4 @@
+#include "unit_tests/allocate_memory_function.h"
 #include "unit_tests/fixtures.h"
 
 using OakumReleaseAllocationsTest = OakumTest;
@@ -18,7 +19,7 @@ TEST_F(OakumReleaseAllocationsTest, givenNullArgumentsWhenCallingOakumReleaseAll
 }
 
 TEST_F(OakumReleaseAllocationsTest, givenAllocationWhenCallingOakumReleaseAllocationsThenItFixesMemoryLeak) {
-    char *memory = new char;
+    auto memory = allocateMemoryFunction();
 
     OakumAllocation *allocations = nullptr;
     size_t allocationCount = 0;
@@ -26,7 +27,7 @@ TEST_F(OakumReleaseAllocationsTest, givenAllocationWhenCallingOakumReleaseAlloca
     EXPECT_NE(nullptr, allocations);
     EXPECT_EQ(1u, allocationCount);
 
-    delete memory;
+    memory.reset();
 
     EXPECT_EQ(OAKUM_LEAKS_DETECTED, oakumDetectLeaks());
 
