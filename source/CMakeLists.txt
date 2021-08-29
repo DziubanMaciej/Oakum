@@ -1,9 +1,5 @@
-file(GLOB OAKUM_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/*.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/oakum/*.h
-)
-add_os_directory()
+append_sources(OAKUM_SOURCES OFF)
+add_subdirectories()
 
 source_group (TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${OAKUM_SOURCES})
 add_library(Oakum STATIC ${OAKUM_SOURCES})

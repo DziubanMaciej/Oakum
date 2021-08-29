@@ -13,17 +13,37 @@ if (WIN32)
 endif()
 set(OAKUM_DOXYGEN_COMMAND "" CACHE STRING "doxygen${EXECUTABLE_SUFFIX}")
 
-macro (add_os_directory)
+macro (add_subdirectories)
+    set(FORBIDDEN_DIR_NAMES)
     if (UNIX)
-        set(OS_DIRECTORY_NAME linux)
+        list(APPEND FORBIDDEN_DIR_NAMES "windows")
     elseif (WIN32)
-        set(OS_DIRECTORY_NAME windows)
-    else()
-        message(FATAL_ERROR "Unknown OS")
+        list(APPEND FORBIDDEN_DIR_NAMES "linux")
     endif()
 
-    if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${OS_DIRECTORY_NAME}/CMakeLists.txt)
-        add_subdirectory(${OS_DIRECTORY_NAME})
+    file(GLOB SUB_DIRS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/*)
+    foreach(SUB_DIR ${SUB_DIRS})
+        if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${SUB_DIR}/CMakeLists.txt)
+            continue()
+        endif()
+
+        list(FIND FORBIDDEN_DIR_NAMES ${SUB_DIR} INDEX)
+        if (NOT INDEX EQUAL -1)
+            continue()
+        endif()
+
+        add_subdirectory(${SUB_DIR})
+    endforeach()
+endmacro()
+
+macro (append_sources LIST_NAME SET_IN_PARENT_SCOPE)
+    file(GLOB SOURCES_IN_CURRENT_DIR
+        ${CMAKE_CURRENT_SOURCE_DIR}/*.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
+    )
+    list(APPEND ${LIST_NAME} ${SOURCES_IN_CURRENT_DIR})
+    if (${SET_IN_PARENT_SCOPE})
+        set(${LIST_NAME} "${${LIST_NAME}}" PARENT_SCOPE)
     endif()
 endmacro()
 
