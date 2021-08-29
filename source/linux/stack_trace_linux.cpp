@@ -108,7 +108,9 @@ bool StackTraceHelper::resolveSourceLocations(OakumStackFrame *frames, size_t fr
             const char *binaryName = dlInfo.dli_fname;
             const size_t addressVma = reinterpret_cast<size_t>(frame.address) - linkMap->l_addr;
             const auto [fileName, fileLine] = addr2line(binaryName, addressVma);
-            setupString(frame.fileName, fileName.c_str());
+            if (fileName != "??") {
+                setupString(frame.fileName, fileName.c_str());
+            }
             frame.fileLine = fileLine;
         } else {
             return result;
