@@ -1,6 +1,7 @@
 file(GLOB OAKUM_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/*.h
     ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/oakum/*.h
 )
 add_os_directory()
 
