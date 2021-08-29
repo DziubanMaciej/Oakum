@@ -16,12 +16,13 @@ private:
     char *field3{};
 };
 
-#define EXPECT_OAKUM_SUCCESS(expr)                    \
-    {                                                 \
-        if ((expr) != OAKUM_SUCCESS) {                \
-            std::cout << "Error: Oakum API error!\n"; \
-            exit(1);                                  \
-        }                                             \
+#define EXPECT_OAKUM_SUCCESS(expr)                                                                 \
+    {                                                                                              \
+        const auto result = (expr);                                                                \
+        if (result != OAKUM_SUCCESS) {                                                             \
+            std::cout << "Error: Oakum API error in \"" << #expr << "\, error=" << result << '\n'; \
+            exit(1);                                                                               \
+        }                                                                                          \
     }
 
 inline void function3() {

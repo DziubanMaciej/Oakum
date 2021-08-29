@@ -113,7 +113,7 @@ bool StackTraceHelper::resolveSourceLocations(OakumStackFrame *frames, size_t fr
             }
             frame.fileLine = fileLine;
         } else {
-            return result;
+            result = false;
         }
     }
 
