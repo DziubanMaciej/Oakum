@@ -13,7 +13,3 @@ std::unique_ptr<char> allocateMemoryFunction1() {
 std::unique_ptr<char> allocateMemoryFunction() {
     return allocateMemoryFunction1();
 }
-
-const char *getDummyFunctionsFilename() {
-    return __FILE__;
-}
