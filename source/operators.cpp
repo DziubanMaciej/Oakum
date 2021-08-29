@@ -25,3 +25,11 @@ void operator delete(void *ptr) noexcept {
 void operator delete[](void *ptr) noexcept {
     Oakum::OakumController::deallocateMemory(ptr);
 }
+
+void operator delete(void *ptr, [[maybe_unused]] size_t size) noexcept {
+    Oakum::OakumController::deallocateMemory(ptr);
+}
+
+void operator delete[](void *ptr, [[maybe_unused]] size_t size) noexcept {
+    Oakum::OakumController::deallocateMemory(ptr);
+}

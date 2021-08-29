@@ -10,6 +10,7 @@
 const inline OakumInitArgs defaultInitArgs{
     true,    // trackStackTraces
     true,    // threadSafe
+    false,   // sortAllocations
     nullptr, // fallbackSymbolName
     nullptr, //fallbackSourceFileName
 };

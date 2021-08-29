@@ -135,7 +135,7 @@ void OakumController::getAllocations(OakumAllocation *&outAllocations, size_t &o
             outAllocations[dstIndex] = srcIterator->second;
             dstIndex++;
         }
-        DEBUG_ERROR_IF(dstIndex != outAllocationsCount);
+        DEBUG_ERROR_IF(dstIndex != outAllocationsCount, "Allocations count mismatch");
     } else {
         outAllocations = nullptr;
     }
@@ -161,7 +161,7 @@ bool OakumController::hasAllocations() {
 }
 
 bool OakumController::resolveStackTraceSymbols(OakumAllocation &allocation) {
-    DEBUG_ERROR_IF(!this->capabilities.supportStackTraces);
+    DEBUG_ERROR_IF(!this->capabilities.supportStackTraces, "resolveStackTraceSymbols even if stack trace tracking is disabled");
     if (allocation.stackFramesCount != 0 && allocation.stackFrames[0].symbolName == nullptr) {
         return StackTraceHelper::resolveSymbols(allocation.stackFrames, allocation.stackFramesCount, fallbackSymbolName);
     }
@@ -169,8 +169,8 @@ bool OakumController::resolveStackTraceSymbols(OakumAllocation &allocation) {
 }
 
 bool OakumController::resolveStackTraceSourceLocations(OakumAllocation &allocation) {
-    DEBUG_ERROR_IF(!this->capabilities.supportStackTraces);
-    DEBUG_ERROR_IF(!this->capabilities.supportStackTracesSourceLocations);
+    DEBUG_ERROR_IF(!this->capabilities.supportStackTraces, "resolveStackTraceSymbols even if stack trace tracking is disabled");
+    DEBUG_ERROR_IF(!this->capabilities.supportStackTracesSourceLocations, "resolveStackTraceSymbols even if source locations resolving is disabled");
     if (allocation.stackFramesCount != 0 && allocation.stackFrames[0].fileName == nullptr) {
         return StackTraceHelper::resolveSourceLocations(allocation.stackFrames, allocation.stackFramesCount, fallbackSourceFileName);
     }
