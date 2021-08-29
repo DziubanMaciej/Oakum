@@ -10,17 +10,6 @@ bool StackTraceHelper::supportsSourceLocations() {
     return true;
 }
 
-void StackTraceHelper::initializeFrames(OakumStackFrame *frames, size_t &framesCount) {
-    OakumStackFrame emptyFrame = {
-        nullptr,
-        nullptr,
-        nullptr,
-        0u,
-    };
-    std::fill_n(frames, framesCount, emptyFrame);
-    framesCount = 0u;
-}
-
 void StackTraceHelper::captureFrames(OakumStackFrame *frames, size_t &framesCount) {
     static thread_local void *frameAddresses[OAKUM_MAX_STACK_FRAMES_COUNT] = {};
     framesCount = CaptureStackBackTrace(skippedFrames, OAKUM_MAX_STACK_FRAMES_COUNT, frameAddresses, nullptr);
@@ -30,12 +19,6 @@ void StackTraceHelper::captureFrames(OakumStackFrame *frames, size_t &framesCoun
             frames[frameIndex].address = frameAddresses[frameIndex];
         }
     }
-}
-
-static void setupString(char *&destination, const char *source) {
-    const size_t bufferSize = strlen(source) + 1;
-    destination = new char[bufferSize];
-    FATAL_ERROR_IF(strcpy_s(destination, bufferSize, source) != 0, "strcpy failed");
 }
 
 bool StackTraceHelper::resolveSymbols(OakumStackFrame *frames, size_t framesCount, const std::optional<std::string> &fallbackSymbolName) {

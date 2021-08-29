@@ -14,13 +14,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-static void setupString(char *&destination, const char *source) {
-    const size_t sourceSize = strlen(source);
-    destination = new char[sourceSize + 1];
-    strcpy(destination, source);
-}
-
-void demangleAndSetupString(char *&destination, const char *source) {
+static void demangleAndSetupString(char *&destination, const char *source) {
     if (source == nullptr) {
         return;
     }
@@ -36,7 +30,7 @@ void demangleAndSetupString(char *&destination, const char *source) {
     }
 }
 
-std::pair<std::string, size_t> addr2line(const char *binaryName, size_t vma) {
+static std::pair<std::string, size_t> addr2line(const char *binaryName, size_t vma) {
     std::stringstream hexStream;
     hexStream << std::hex << vma;
     std::string vmaString = hexStream.str();
@@ -59,17 +53,6 @@ std::pair<std::string, size_t> addr2line(const char *binaryName, size_t vma) {
 bool StackTraceHelper::supportsSourceLocations() {
     std::string output = ChildProcess::runForOutput("which", {"addr2line"});
     return !output.empty();
-}
-
-void StackTraceHelper::initializeFrames(OakumStackFrame *frames, size_t &framesCount) {
-    OakumStackFrame emptyFrame = {
-        nullptr,
-        nullptr,
-        nullptr,
-        0u,
-    };
-    std::fill_n(frames, framesCount, emptyFrame);
-    framesCount = 0u;
 }
 
 void StackTraceHelper::captureFrames(OakumStackFrame *frames, size_t &framesCount) {
