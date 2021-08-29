@@ -20,3 +20,27 @@ RaiiSyscallsBackup MockSyscalls::mockSymbolResolvingFail() {
 
     return backup;
 }
+
+RaiiSyscallsBackup MockSyscalls::mockSourceLocationResolvingSuccess(const char *fileToReturn, size_t lineToReturn) {
+    RaiiSyscallsBackup backup{};
+
+    Oakum::syscalls.SymGetLineFromAddr64 = [fileToReturn, lineToReturn](HANDLE hProcess, DWORD64 qwAddr, PDWORD pdwDisplacement, PIMAGEHLP_LINE64 Line64) -> BOOL {
+        static char internalBuffer[256] = {};
+        strcpy(internalBuffer, fileToReturn);
+        Line64->FileName = internalBuffer;
+        Line64->LineNumber = lineToReturn;
+        return TRUE;
+    };
+
+    return backup;
+}
+
+RaiiSyscallsBackup MockSyscalls::mockSourceLocationResolvingFail() {
+    RaiiSyscallsBackup backup{};
+
+    Oakum::syscalls.SymGetLineFromAddr64 = +[](HANDLE hProcess, DWORD64 qwAddr, PDWORD pdwDisplacement, PIMAGEHLP_LINE64 Line64) -> BOOL {
+        return FALSE;
+    };
+
+    return backup;
+}

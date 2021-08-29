@@ -41,13 +41,15 @@ struct OakumTestWithoutStackTraces : OakumTest {
     }
 };
 
-struct OakumTestWithFallbackSymbol : OakumTest {
+struct OakumTestWithFallbackStrings : OakumTest {
     void SetUp() override {
         initArgs.fallbackSymbolName = fallbackSymbolName;
+        initArgs.fallbackSourceFileName = fallbackSourceFileName;
         OakumTest::SetUp();
     }
 
     const char *fallbackSymbolName = "<symbol>";
+    const char *fallbackSourceFileName = "<fileName>";
 };
 
 struct RaiiOakumIgnore {

@@ -54,9 +54,27 @@ TEST_F(OakumResolveStackTraceSymbolsTest, givenSymbolsResolvingFailWhenOakumReso
     EXPECT_OAKUM_SUCCESS(oakumReleaseAllocations(allocations, allocationCount));
 }
 
-using OakumResolveStackTraceSymbolsWithFallbackSymbolTest = OakumTestWithFallbackSymbol;
+using OakumResolveStackTraceSymbolsWithFallbackStringsTest = OakumTestWithFallbackStrings;
 
-TEST_F(OakumResolveStackTraceSymbolsWithFallbackSymbolTest, givenSymbolsResolvingFailAndFallbackSymbolIsPassWhenOakumResolveStackTraceSymbolsIsCalledThenUseFallbackSymbol) {
+TEST_F(OakumResolveStackTraceSymbolsWithFallbackStringsTest, givenSymbolsResolvingSuccessAndFallbackSymbolIsPassWhenOakumResolveStackTraceSymbolsIsCalledThenUseResolvedSymbol) {
+    RaiiSyscallsBackup backup = MockSyscalls::mockSymbolResolvingSuccess("mySymbol");
+
+    auto memory = dummyFunctionA();
+
+    OakumAllocation *allocations = nullptr;
+    size_t allocationCount = 0u;
+    EXPECT_OAKUM_SUCCESS(oakumGetAllocations(&allocations, &allocationCount));
+    EXPECT_NE(nullptr, allocations);
+    EXPECT_EQ(1u, allocationCount);
+
+    EXPECT_OAKUM_SUCCESS(oakumResolveStackTraceSymbols(allocations, allocationCount));
+    for (int i = 0; i < allocations[0].stackFramesCount; i++) {
+        EXPECT_STREQ("mySymbol", allocations[0].stackFrames[i].symbolName);
+    }
+    EXPECT_OAKUM_SUCCESS(oakumReleaseAllocations(allocations, allocationCount));
+}
+
+TEST_F(OakumResolveStackTraceSymbolsWithFallbackStringsTest, givenSymbolsResolvingFailAndFallbackSymbolIsPassWhenOakumResolveStackTraceSymbolsIsCalledThenUseFallbackSymbol) {
     RaiiSyscallsBackup backup = MockSyscalls::mockSymbolResolvingFail();
 
     auto memory = dummyFunctionA();
@@ -101,7 +119,8 @@ TEST_F(OakumResolveStackTraceSymbolsTest, givenSymbolsAlreadyResolvedWhenOakumRe
 }
 
 TEST_F(OakumResolveStackTraceSymbolsTest, givenSourceLocationsResolvedWhenOakumResolveStackTraceSymbolsIsCalledThenReturnCorrectStackTrace) {
-    RaiiSyscallsBackup backup = MockSyscalls::mockSymbolResolvingSuccess("mySymbol");
+    RaiiSyscallsBackup backup1 = MockSyscalls::mockSourceLocationResolvingSuccess("myFile", 10);
+    RaiiSyscallsBackup backup2 = MockSyscalls::mockSymbolResolvingSuccess("mySymbol");
 
     OakumCapabilities capabilities{};
     EXPECT_OAKUM_SUCCESS(oakumGetCapabilities(&capabilities));
@@ -122,6 +141,8 @@ TEST_F(OakumResolveStackTraceSymbolsTest, givenSourceLocationsResolvedWhenOakumR
     EXPECT_OAKUM_SUCCESS(oakumResolveStackTraceSymbols(allocations, allocationCount));
     for (int i = 0; i < allocations[0].stackFramesCount; i++) {
         EXPECT_STREQ("mySymbol", allocations[0].stackFrames[i].symbolName);
+        EXPECT_STREQ("myFile", allocations[0].stackFrames[i].fileName);
+        EXPECT_EQ(10, allocations[0].stackFrames[i].fileLine);
     }
     EXPECT_OAKUM_SUCCESS(oakumReleaseAllocations(allocations, allocationCount));
 }

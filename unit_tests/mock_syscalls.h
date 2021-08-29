@@ -29,4 +29,7 @@ private:
 struct MockSyscalls {
     static RaiiSyscallsBackup mockSymbolResolvingSuccess(const char *valueToReturn);
     static RaiiSyscallsBackup mockSymbolResolvingFail();
+
+    static RaiiSyscallsBackup mockSourceLocationResolvingSuccess(const char *fileToReturn, size_t lineToReturn);
+    static RaiiSyscallsBackup mockSourceLocationResolvingFail();
 };
