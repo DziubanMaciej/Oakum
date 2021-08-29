@@ -28,7 +28,7 @@ RaiiSyscallsBackup MockSyscalls::mockSourceLocationResolvingSuccess(const char *
         static char internalBuffer[256] = {};
         strcpy(internalBuffer, fileToReturn);
         Line64->FileName = internalBuffer;
-        Line64->LineNumber = lineToReturn;
+        Line64->LineNumber = static_cast<DWORD>(lineToReturn);
         return TRUE;
     };
 
