@@ -1,0 +1,1 @@
+append_sources(OAKUM_UNIT_TESTS_SOURCES ON)
