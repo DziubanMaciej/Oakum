@@ -38,7 +38,7 @@ static void setupString(char *&destination, const char *source) {
     FATAL_ERROR_IF(strcpy_s(destination, bufferSize, source) != 0, "strcpy failed");
 }
 
-bool StackTraceHelper::resolveSymbols(OakumStackFrame *frames, size_t framesCount) {
+bool StackTraceHelper::resolveSymbols(OakumStackFrame *frames, size_t framesCount, const std::optional<std::string> &fallbackSymbolName) {
     HANDLE process = GetCurrentProcess();
     SymInitialize(process, NULL, TRUE);
 
@@ -59,6 +59,8 @@ bool StackTraceHelper::resolveSymbols(OakumStackFrame *frames, size_t framesCoun
 
         if (SymFromAddr(process, address, 0, &symbolInfo.asSymbolInfo)) {
             setupString(frames[frameIndex].symbolName, symbolInfo.asSymbolInfo.Name);
+        } else if (fallbackSymbolName.has_value()) {
+            setupString(frames[frameIndex].symbolName, fallbackSymbolName.value().c_str());
         } else {
             result = false;
         }
@@ -66,7 +68,7 @@ bool StackTraceHelper::resolveSymbols(OakumStackFrame *frames, size_t framesCoun
     return result;
 }
 
-bool StackTraceHelper::resolveSourceLocations(OakumStackFrame *frames, size_t framesCount) {
+bool StackTraceHelper::resolveSourceLocations(OakumStackFrame *frames, size_t framesCount, const std::optional<std::string> &fallbackSourceFileName) {
     // Initialize environment for querying source locations
     HANDLE process = GetCurrentProcess();
     SymInitialize(process, NULL, TRUE);
@@ -85,6 +87,8 @@ bool StackTraceHelper::resolveSourceLocations(OakumStackFrame *frames, size_t fr
         if (SymGetLineFromAddr64(process, address, &displacement, &lineInfo)) {
             setupString(frames[frameIndex].fileName, lineInfo.FileName);
             frames[frameIndex].fileLine = lineInfo.LineNumber;
+        } else if (fallbackSourceFileName.has_value()) {
+            setupString(frames[frameIndex].fileName, fallbackSourceFileName.value().c_str());
         } else {
             result = false;
         }

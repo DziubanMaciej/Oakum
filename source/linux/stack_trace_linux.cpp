@@ -82,7 +82,7 @@ void StackTraceHelper::captureFrames(OakumStackFrame *frames, size_t &framesCoun
     }
 }
 
-bool StackTraceHelper::resolveSymbols(OakumStackFrame *frames, size_t framesCount) {
+bool StackTraceHelper::resolveSymbols(OakumStackFrame *frames, size_t framesCount, const std::optional<std::string> &fallbackSymbolName) {
     bool result = true;
     for (size_t frameIndex = 0; frameIndex < framesCount; frameIndex++) {
         OakumStackFrame &frame = frames[frameIndex];
@@ -90,6 +90,8 @@ bool StackTraceHelper::resolveSymbols(OakumStackFrame *frames, size_t framesCoun
         Dl_info dlInfo = {};
         if (dladdr(frame.address, &dlInfo) != 0) {
             demangleAndSetupString(frame.symbolName, dlInfo.dli_sname);
+        } else if (fallbackSymbolName.has_value()) {
+            setupString(frames[frameIndex].symbolName, fallbackSymbolName.value().c_str());
         } else {
             result = false;
         }
@@ -97,7 +99,7 @@ bool StackTraceHelper::resolveSymbols(OakumStackFrame *frames, size_t framesCoun
     return result;
 }
 
-bool StackTraceHelper::resolveSourceLocations(OakumStackFrame *frames, size_t framesCount) {
+bool StackTraceHelper::resolveSourceLocations(OakumStackFrame *frames, size_t framesCount, const std::optional<std::string> &fallbackSourceFileName) {
     bool result = true;
     for (size_t frameIndex = 0; frameIndex < framesCount; frameIndex++) {
         OakumStackFrame &frame = frames[frameIndex];
@@ -112,6 +114,8 @@ bool StackTraceHelper::resolveSourceLocations(OakumStackFrame *frames, size_t fr
                 setupString(frame.fileName, fileName.c_str());
             }
             frame.fileLine = fileLine;
+        } else if (fallbackSourceFileName.has_value()) {
+            setupString(frames[frameIndex].fileName, fallbackSourceFileName.value().c_str());
         } else {
             result = false;
         }

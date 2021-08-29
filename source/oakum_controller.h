@@ -5,6 +5,7 @@
 #include <atomic>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <unordered_map>
 
 namespace Oakum {
@@ -33,6 +34,7 @@ public:
 
 protected:
     static OakumCapabilities createCapabilities(const OakumInitArgs &initArgs);
+    static std::optional<std::string> createOptionalString(const char *str);
     void registerAllocation(OakumAllocation info);
     void registerDeallocation(void *pointer);
     bool getIgnoreState();
@@ -52,6 +54,9 @@ private:
     static inline thread_local size_t ignoreRefcount = false;
 
     const OakumCapabilities capabilities;
+    const std::optional<std::string> fallbackSymbolName = {};
+    const std::optional<std::string> fallbackSourceFileName = {};
+
     std::atomic<OakumAllocationIdType> allocationIdCounter = {};
     std::recursive_mutex allocationsLock = {};
     std::unordered_map<void *, OakumAllocation> allocations = {};

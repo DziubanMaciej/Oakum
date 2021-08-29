@@ -12,7 +12,10 @@ struct RaiiOakumIgnore {
 };
 
 namespace Oakum {
-OakumController::OakumController(const OakumInitArgs &initArgs) : capabilities(createCapabilities(initArgs)) {}
+OakumController::OakumController(const OakumInitArgs &initArgs)
+    : capabilities(createCapabilities(initArgs)),
+      fallbackSymbolName(createOptionalString(initArgs.fallbackSymbolName)),
+      fallbackSourceFileName(createOptionalString(initArgs.fallbackSourceFileName)) {}
 
 OakumCapabilities OakumController::createCapabilities(const OakumInitArgs &initArgs) {
     OakumCapabilities capabilities{};
@@ -20,6 +23,14 @@ OakumCapabilities OakumController::createCapabilities(const OakumInitArgs &initA
     capabilities.supportStackTracesSourceLocations = initArgs.trackStackTraces && StackTraceHelper::supportsSourceLocations();
     capabilities.threadSafe = initArgs.threadSafe;
     return capabilities;
+}
+
+std::optional<std::string> OakumController::createOptionalString(const char *str) {
+    if (str == nullptr) {
+        return {};
+    } else {
+        return str;
+    }
 }
 
 void OakumController::initialize(const OakumInitArgs &initArgs) {
@@ -143,7 +154,7 @@ bool OakumController::hasAllocations() {
 bool OakumController::resolveStackTraceSymbols(OakumAllocation &allocation) {
     DEBUG_ERROR_IF(!this->capabilities.supportStackTraces);
     if (allocation.stackFramesCount != 0 && allocation.stackFrames[0].symbolName == nullptr) {
-        return StackTraceHelper::resolveSymbols(allocation.stackFrames, allocation.stackFramesCount);
+        return StackTraceHelper::resolveSymbols(allocation.stackFrames, allocation.stackFramesCount, fallbackSymbolName);
     }
     return true;
 }
@@ -152,7 +163,7 @@ bool OakumController::resolveStackTraceSourceLocations(OakumAllocation &allocati
     DEBUG_ERROR_IF(!this->capabilities.supportStackTraces);
     DEBUG_ERROR_IF(!this->capabilities.supportStackTracesSourceLocations);
     if (allocation.stackFramesCount != 0 && allocation.stackFrames[0].fileName == nullptr) {
-        return StackTraceHelper::resolveSourceLocations(allocation.stackFrames, allocation.stackFramesCount);
+        return StackTraceHelper::resolveSourceLocations(allocation.stackFrames, allocation.stackFramesCount, fallbackSourceFileName);
     }
     return true;
 }

@@ -20,7 +20,7 @@ private:
     {                                                                                              \
         const auto result = (expr);                                                                \
         if (result != OAKUM_SUCCESS) {                                                             \
-            std::cout << "Error: Oakum API error in \"" << #expr << "\, error=" << result << '\n'; \
+            std::cout << "Error: Oakum API error in \"" << #expr << "\" error=" << result << '\n'; \
             exit(1);                                                                               \
         }                                                                                          \
     }
@@ -41,6 +41,8 @@ int main() {
     OakumInitArgs initArgs{};
     initArgs.trackStackTraces = true;
     initArgs.threadSafe = false;
+    initArgs.fallbackSymbolName = "<unknown_symbol>";
+    initArgs.fallbackSourceFileName = "<unknown_file>";
 
     EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
     function1();
@@ -59,9 +61,7 @@ int main() {
         for (size_t stackFrameIndex = 0u; stackFrameIndex < allocation.stackFramesCount; stackFrameIndex++) {
             OakumStackFrame &frame = allocation.stackFrames[stackFrameIndex];
             std::cout << "    " << frame.symbolName;
-            if (frame.fileName) {
-                std::cout << " in file " << frame.fileName << ":" << frame.fileLine;
-            }
+            std::cout << " in file " << frame.fileName << ":" << frame.fileLine;
             std::cout << "\n";
         }
         std::cout << '\n';
