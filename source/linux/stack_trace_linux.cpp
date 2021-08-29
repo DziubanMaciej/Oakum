@@ -81,18 +81,24 @@ bool StackTraceHelper::resolveSourceLocations(OakumStackFrame *frames, size_t fr
 
         Dl_info dlInfo = {};
         link_map *linkMap = {};
+        bool resolved = false;
         if (syscalls.dladdr1(frame.address, &dlInfo, reinterpret_cast<void **>(&linkMap), RTLD_DL_LINKMAP) != 0) {
             const char *binaryName = dlInfo.dli_fname;
             const size_t addressVma = reinterpret_cast<size_t>(frame.address) - linkMap->l_addr;
             const auto [fileName, fileLine] = addr2line(binaryName, addressVma);
             if (fileName != "??") {
                 setupString(frame.fileName, fileName.c_str());
+                resolved = true;
             }
             frame.fileLine = fileLine;
-        } else if (fallbackSourceFileName.has_value()) {
-            setupString(frames[frameIndex].fileName, fallbackSourceFileName.value().c_str());
-        } else {
-            result = false;
+        }
+
+        if (!resolved) {
+            if (fallbackSourceFileName.has_value()) {
+                setupString(frames[frameIndex].fileName, fallbackSourceFileName.value().c_str());
+            } else {
+                result = false;
+            }
         }
     }
 

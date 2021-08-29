@@ -8,7 +8,7 @@ namespace Oakum {
 void StackTraceHelper::setupString(char *&destination, const char *source) {
     const size_t bufferSize = strlen(source) + 1;
     destination = new char[bufferSize];
-    FATAL_ERROR_IF(strcpy(destination, source) != 0, "strcpy failed");
+    strcpy(destination, source) != 0;
 }
 
 void StackTraceHelper::initializeFrames(OakumStackFrame *frames, size_t &framesCount) {
