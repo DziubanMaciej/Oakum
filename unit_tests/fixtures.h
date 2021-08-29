@@ -8,8 +8,10 @@
 #define EXPECT_OAKUM_SUCCESS(expr) EXPECT_EQ(OAKUM_SUCCESS, (expr))
 
 const inline OakumInitArgs defaultInitArgs{
-    true, // trackStackTraces
-    true, // threadSafe
+    true,    // trackStackTraces
+    true,    // threadSafe
+    nullptr, // fallbackSymbolName
+    nullptr, //fallbackSourceFileName
 };
 
 struct OakumTest : ::testing::Test {
@@ -37,6 +39,15 @@ struct OakumTestWithoutStackTraces : OakumTest {
         initArgs.trackStackTraces = false;
         OakumTest::SetUp();
     }
+};
+
+struct OakumTestWithFallbackSymbol : OakumTest {
+    void SetUp() override {
+        initArgs.fallbackSymbolName = fallbackSymbolName;
+        OakumTest::SetUp();
+    }
+
+    const char *fallbackSymbolName = "<symbol>";
 };
 
 struct RaiiOakumIgnore {
