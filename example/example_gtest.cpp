@@ -27,8 +27,8 @@ public:
                 OakumAllocation *allocations{};
                 size_t allocationsCount{};
                 EXPECT_OAKUM_SUCCESS(oakumGetAllocations(&allocations, &allocationsCount));
-                EXPECT_OAKUM_SUCCESS(oakumResolveStackTraceSymbols(allocations, allocationsCount));
-                EXPECT_OAKUM_SUCCESS(oakumResolveStackTraceSourceLocations(allocations, allocationsCount));
+                EXPECT_OAKUM_SUCCESS(oakumResolveStackTraceSymbols(allocations, 1));
+                EXPECT_OAKUM_SUCCESS(oakumResolveStackTraceSourceLocations(allocations, 1));
                 std::cout << "Total leaks found: " << allocationsCount << ". Showing the first one:\n";
                 std::cout << "  id=" << allocations[0].allocationId << ", size=" << allocations[0].size << '\n';
                 for (size_t stackFrameIndex = 0u; stackFrameIndex < allocations[0].stackFramesCount; stackFrameIndex++) {
