@@ -12,6 +12,7 @@ public:
     void OnTestStart(const ::testing::TestInfo &test_info) override {
         OakumInitArgs args{};
         if (captureStackTraces) {
+            args.sortAllocations = true;
             args.trackStackTraces = true;
             args.fallbackSourceFileName = "<unknown_file>";
             args.fallbackSymbolName = "<unknown_symbol>";
@@ -28,12 +29,11 @@ public:
                 EXPECT_OAKUM_SUCCESS(oakumGetAllocations(&allocations, &allocationsCount));
                 EXPECT_OAKUM_SUCCESS(oakumResolveStackTraceSymbols(allocations, allocationsCount));
                 EXPECT_OAKUM_SUCCESS(oakumResolveStackTraceSourceLocations(allocations, allocationsCount));
-                for (size_t allocationIndex = 0; allocationIndex < allocationsCount; allocationIndex++) {
-                    std::cout << "  id=" << allocations[allocationIndex].allocationId << ", size=" << allocations[allocationIndex].size << '\n';
-                    for (size_t stackFrameIndex = 0u; stackFrameIndex < allocations[allocationIndex].stackFramesCount; stackFrameIndex++) {
-                        OakumStackFrame &frame = allocations[allocationIndex].stackFrames[stackFrameIndex];
-                        std::cout << "    " << frame.symbolName << " in file " << frame.fileName << ":" << frame.fileLine << "\n";
-                    }
+                std::cout << "Total leaks found: " << allocationsCount << ". Showing the first one:\n";
+                std::cout << "  id=" << allocations[0].allocationId << ", size=" << allocations[0].size << '\n';
+                for (size_t stackFrameIndex = 0u; stackFrameIndex < allocations[0].stackFramesCount; stackFrameIndex++) {
+                    OakumStackFrame &frame = allocations[0].stackFrames[stackFrameIndex];
+                    std::cout << "    " << frame.symbolName << " in file " << frame.fileName << ":" << frame.fileLine << "\n";
                 }
                 EXPECT_OAKUM_SUCCESS(oakumReleaseAllocations(allocations, allocationsCount));
             }
