@@ -56,8 +56,9 @@ private:
     const OakumCapabilities capabilities;
     const std::optional<std::string> fallbackSymbolName = {};
     const std::optional<std::string> fallbackSourceFileName = {};
+    const bool sortAllocations = {};
 
-    std::atomic<OakumAllocationIdType> allocationIdCounter = {};
+    std::atomic<OakumAllocationIdType> allocationIdCounter = 1;
     std::recursive_mutex allocationsLock = {};
     std::unordered_map<void *, OakumAllocation> allocations = {};
 };

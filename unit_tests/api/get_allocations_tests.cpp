@@ -1,6 +1,6 @@
 #include "unit_tests/fixtures.h"
 
-struct OakumGetAllocationsTest : OakumTest {
+struct OakumGetAllocationsTest : OakumTestWithAllocationSorting {
     void validateStackFrames(OakumAllocation &allocation) {
         EXPECT_GE(allocation.stackFramesCount, 0u);
 
@@ -13,11 +13,15 @@ struct OakumGetAllocationsTest : OakumTest {
         }
     }
 
-    void sortAllocationsById(OakumAllocation *allocations, size_t count) {
-        auto comparator = [](const OakumAllocation &left, const OakumAllocation &right) {
-            return left.allocationId < right.allocationId;
-        };
-        std::sort(allocations, allocations + count, comparator);
+    bool areAllocationsSorted(OakumAllocation *allocations, size_t count) {
+        OakumAllocationIdType previousId = 0u;
+        for (size_t allocationIndex = 0u; allocationIndex < count; allocationIndex++) {
+            if (previousId >= allocations[allocationIndex].allocationId) {
+                return false;
+            }
+            previousId = allocations[allocationIndex].allocationId;
+        }
+        return true;
     }
 };
 
@@ -59,21 +63,21 @@ TEST_F(OakumGetAllocationsTest, givenSomeAllocationsWhenCallingOakumGetAllocatio
     EXPECT_OAKUM_SUCCESS(oakumGetAllocations(&allocations, &allocationCount));
     EXPECT_NE(nullptr, allocations);
     EXPECT_EQ(3u, allocationCount);
-    sortAllocationsById(allocations, 3);
+    EXPECT_TRUE(areAllocationsSorted(allocations, allocationCount));
 
-    EXPECT_EQ(0u, allocations[0].allocationId);
+    EXPECT_EQ(1u, allocations[0].allocationId);
     EXPECT_EQ(sizeof(char), allocations[0].size);
     EXPECT_EQ(a, allocations[0].pointer);
     EXPECT_FALSE(allocations[0].noThrow);
     validateStackFrames(allocations[0]);
 
-    EXPECT_EQ(1u, allocations[1].allocationId);
+    EXPECT_EQ(2u, allocations[1].allocationId);
     EXPECT_EQ(sizeof(int), allocations[1].size);
     EXPECT_EQ(b, allocations[1].pointer);
     EXPECT_FALSE(allocations[1].noThrow);
     validateStackFrames(allocations[1]);
 
-    EXPECT_EQ(2u, allocations[2].allocationId);
+    EXPECT_EQ(3u, allocations[2].allocationId);
     EXPECT_EQ(12 * sizeof(int), allocations[2].size);
     EXPECT_EQ(c, allocations[2].pointer);
     EXPECT_FALSE(allocations[2].noThrow);
@@ -95,21 +99,21 @@ TEST_F(OakumGetAllocationsTest, givenSomeNoThrowAllocationsWhenCallingOakumGetAl
     EXPECT_OAKUM_SUCCESS(oakumGetAllocations(&allocations, &allocationCount));
     EXPECT_NE(nullptr, allocations);
     EXPECT_EQ(3u, allocationCount);
-    sortAllocationsById(allocations, 3);
+    EXPECT_TRUE(areAllocationsSorted(allocations, allocationCount));
 
-    EXPECT_EQ(0u, allocations[0].allocationId);
+    EXPECT_EQ(1u, allocations[0].allocationId);
     EXPECT_EQ(sizeof(char), allocations[0].size);
     EXPECT_EQ(a, allocations[0].pointer);
     EXPECT_TRUE(allocations[0].noThrow);
     validateStackFrames(allocations[0]);
 
-    EXPECT_EQ(1u, allocations[1].allocationId);
+    EXPECT_EQ(2u, allocations[1].allocationId);
     EXPECT_EQ(sizeof(int), allocations[1].size);
     EXPECT_EQ(b, allocations[1].pointer);
     EXPECT_TRUE(allocations[1].noThrow);
     validateStackFrames(allocations[1]);
 
-    EXPECT_EQ(2u, allocations[2].allocationId);
+    EXPECT_EQ(3u, allocations[2].allocationId);
     EXPECT_EQ(12 * sizeof(int), allocations[2].size);
     EXPECT_EQ(c, allocations[2].pointer);
     EXPECT_TRUE(allocations[2].noThrow);
@@ -132,7 +136,7 @@ TEST_F(OakumGetAllocationsWithoutStackTracesTest, givenNoStackTracesWhenCallingO
     EXPECT_NE(nullptr, allocations);
     EXPECT_EQ(1u, allocationCount);
 
-    EXPECT_EQ(0u, allocations[0].allocationId);
+    EXPECT_EQ(1u, allocations[0].allocationId);
     EXPECT_EQ(sizeof(char), allocations[0].size);
     EXPECT_EQ(memory, allocations[0].pointer);
     EXPECT_FALSE(allocations[0].noThrow);

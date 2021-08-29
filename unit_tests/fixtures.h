@@ -52,6 +52,13 @@ struct OakumTestWithFallbackStrings : OakumTest {
     const char *fallbackSourceFileName = "<fileName>";
 };
 
+struct OakumTestWithAllocationSorting : OakumTest {
+    void SetUp() override {
+        initArgs.sortAllocations = true;
+        OakumTest::SetUp();
+    }
+};
+
 struct RaiiOakumIgnore {
     RaiiOakumIgnore() {
         EXPECT_OAKUM_SUCCESS(oakumStartIgnore());

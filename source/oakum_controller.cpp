@@ -2,6 +2,8 @@
 #include "source/oakum_controller.h"
 #include "source/stack_trace.h"
 
+#include <algorithm>
+
 struct RaiiOakumIgnore {
     RaiiOakumIgnore() {
         Oakum::OakumController::getInstance()->incrementIgnoreRefcount();
@@ -15,7 +17,8 @@ namespace Oakum {
 OakumController::OakumController(const OakumInitArgs &initArgs)
     : capabilities(createCapabilities(initArgs)),
       fallbackSymbolName(createOptionalString(initArgs.fallbackSymbolName)),
-      fallbackSourceFileName(createOptionalString(initArgs.fallbackSourceFileName)) {}
+      fallbackSourceFileName(createOptionalString(initArgs.fallbackSourceFileName)),
+      sortAllocations(initArgs.sortAllocations) {}
 
 OakumCapabilities OakumController::createCapabilities(const OakumInitArgs &initArgs) {
     OakumCapabilities capabilities{};
@@ -135,6 +138,12 @@ void OakumController::getAllocations(OakumAllocation *&outAllocations, size_t &o
         DEBUG_ERROR_IF(dstIndex != outAllocationsCount);
     } else {
         outAllocations = nullptr;
+    }
+
+    if (this->sortAllocations) {
+        std::sort(outAllocations, outAllocations + outAllocationsCount, [](const OakumAllocation &left, const OakumAllocation &right) {
+            return left.allocationId < right.allocationId;
+        });
     }
 }
 

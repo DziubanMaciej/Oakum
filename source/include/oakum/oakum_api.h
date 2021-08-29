@@ -17,7 +17,7 @@
 
 extern "C" {
 
-/// @brief An integer type for uniquely identifying allocations.
+/// @brief An integer type for uniquely identifying allocations. Identifiers start at 1.
 using OakumAllocationIdType = uint64_t;
 
 #ifndef OAKUM_MAX_STACK_FRAMES_COUNT
@@ -29,6 +29,7 @@ using OakumAllocationIdType = uint64_t;
 struct OakumInitArgs {
     bool trackStackTraces;              ///< Enable stack trace tracking. See #OakumStackFrame for more information.
     bool threadSafe;                    ///< Enable thread safety inside the library.
+    bool sortAllocations;               ///< Sort allocations by their unique identifier in #oakumGetAllocations
     const char *fallbackSymbolName;     ///< Symbol name to be used, when #oakumResolveStackTraceSymbols fails to resolve the actual name. May be null.
     const char *fallbackSourceFileName; ///< Source file name to be used, when #oakumResolveStackTraceSourceLocations fails to resolve the actual name. May be null.
 };
@@ -121,6 +122,7 @@ OakumResult oakumDetectLeaks();
 /// fills #OakumStackFrame.address in all stack frames. However, the rest of the stack trace data is set to
 /// `NULL` and must be explicitly requested with #oakumResolveStackTraceSymbols and #oakumResolveStackTraceSourceLocations
 /// calls.
+/// @details If #OakumInitArgs.sortAllocations is enabled, returned allocations will be sorted by id.
 /// @param[out] outAllocations address, to which the library will store allocated array address.
 /// @param[out] outAllocationsCount address, to which the library will store allocated array size.
 /// @return #OAKUM_UNINITIALIZED, if #oakumInit has not been called.
