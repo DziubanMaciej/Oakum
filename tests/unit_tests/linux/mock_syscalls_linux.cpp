@@ -33,6 +33,17 @@ RaiiSyscallsBackup MockSyscalls::mockSymbolResolvingFail() {
     return backup;
 }
 
+RaiiSyscallsBackup MockSyscalls::mockSymbolResolvingToNullptr() {
+    RaiiSyscallsBackup backup{};
+
+    Oakum::syscalls.dladdr = [](const void *addr, Dl_info *info) -> int {
+        info->dli_sname = nullptr;
+        return 1;
+    };
+
+    return backup;
+}
+
 RaiiSyscallsBackup MockSyscalls::mockSourceLocationResolvingSuccess(const char *fileToReturn, size_t lineToReturn) {
     RaiiSyscallsBackup backup{};
 
