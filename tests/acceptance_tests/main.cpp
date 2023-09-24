@@ -3,20 +3,20 @@
 #include "tests/common/allocate_memory_function.h"
 #include "tests/common/fixtures.h"
 
-using AcceptanceTest = OakumTest;
+using AcceptanceTest = OakumTestWithFallbackStrings;
 
 // TODO handle this in cmake
 #ifndef NDEBUG
-using AcceptanceTestDebug = OakumTestWithFallbackStrings;
+using AcceptanceTestDebug = AcceptanceTest;
 using AcceptanceTestRelease = SkippedTest;
-using AcceptanceTestWithSymbols = OakumTestWithFallbackStrings;
+using AcceptanceTestWithSymbols = AcceptanceTest;
 #else
 using AcceptanceTestDebug = SkippedTest;
-using AcceptanceTestRelease = OakumTestWithFallbackStrings;
+using AcceptanceTestRelease = AcceptanceTest;
 #ifdef _MSC_VER
 using AcceptanceTestWithSymbols = SkippedTest;
 #else
-using AcceptanceTestWithSymbols = OakumTestWithFallbackStrings;
+using AcceptanceTestWithSymbols = AcceptanceTest;
 #endif
 #endif
 
@@ -82,6 +82,12 @@ TEST_F(AcceptanceTestWithSymbols, givenSymbolsPresentResolvingSymbolsThenReturnC
         EXPECT_NE(nullptr, strstr(frame.symbolName, allocateMemoryFunctionNames[i]));
     }
 
+    // Verify there are no nullptrs returned
+    for (size_t i = 0; i < allocation.stackFramesCount; i++) {
+        OakumStackFrame &frame = allocation.stackFrames[i];
+        EXPECT_NE(nullptr, frame.symbolName);
+    }
+
     memory.reset();
     EXPECT_EQ(OAKUM_SUCCESS, oakumReleaseAllocations(allocations, allocationsCount));
 }
@@ -106,6 +112,12 @@ TEST_F(AcceptanceTestDebug, givenDebugConfigWhenResolvingSourceLocationsThenRetu
         EXPECT_GE(allocateMemoryFunctionEndLines[i], frame.fileLine);
     }
 
+    // Verify there are no nullptrs returned
+    for (size_t i = 0; i < allocation.stackFramesCount; i++) {
+        OakumStackFrame &frame = allocation.stackFrames[i];
+        EXPECT_NE(nullptr, frame.fileName);
+    }
+
     memory.reset();
     EXPECT_EQ(OAKUM_SUCCESS, oakumReleaseAllocations(allocations, allocationsCount));
 }
@@ -127,6 +139,12 @@ TEST_F(AcceptanceTestRelease, givenReleaseConfigWhenResolvingSourceLocationsThen
         OakumStackFrame &frame = allocation.stackFrames[i];
         EXPECT_STREQ(initArgs.fallbackSourceFileName, frame.fileName);
         EXPECT_EQ(0, frame.fileLine);
+    }
+
+    // Verify there are no nullptrs returned
+    for (size_t i = 0; i < allocation.stackFramesCount; i++) {
+        OakumStackFrame &frame = allocation.stackFrames[i];
+        EXPECT_NE(nullptr, frame.fileName);
     }
 
     memory.reset();
