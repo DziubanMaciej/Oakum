@@ -94,7 +94,7 @@ TEST_F(AcceptanceTestDebug, givenDebugConfigWhenResolvingSourceLocationsThenRetu
     // Verify couple levels of allocation inside 'allocateMemoryFunction'.
     for (size_t i = 0; i < allocateMemoryFunctionDepth; i++) {
         OakumStackFrame &frame = allocation.stackFrames[i + 1]; // start from 1, because 0 is operator new
-        EXPECT_EQ(0, strcmp(allocateMemoryFunctionFile, frame.fileName));
+        EXPECT_STREQ(allocateMemoryFunctionFile, frame.fileName);
         EXPECT_LE(allocateMemoryFunctionBeginLines[i], frame.fileLine);
         EXPECT_GE(allocateMemoryFunctionEndLines[i], frame.fileLine);
     }
@@ -118,7 +118,7 @@ TEST_F(AcceptanceTestRelease, givenReleaseConfigWhenResolvingSourceLocationsThen
     // Verify couple levels of allocation inside 'allocateMemoryFunction'.
     for (size_t i = 0; i < allocateMemoryFunctionDepth; i++) {
         OakumStackFrame &frame = allocation.stackFrames[i];
-        EXPECT_EQ(0, strcmp(initArgs.fallbackSourceFileName, frame.fileName));
+        EXPECT_STREQ(initArgs.fallbackSourceFileName, frame.fileName);
         EXPECT_EQ(0, frame.fileLine);
     }
 
