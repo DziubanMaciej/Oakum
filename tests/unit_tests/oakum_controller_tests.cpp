@@ -1,5 +1,5 @@
 #include "source/oakum_controller.h"
-#include "unit_tests/fixtures.h"
+#include "tests/common/fixtures.h"
 
 #include <gtest/gtest.h>
 

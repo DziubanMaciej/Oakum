@@ -12,7 +12,7 @@ const inline OakumInitArgs defaultInitArgs{
     true,    // threadSafe
     false,   // sortAllocations
     nullptr, // fallbackSymbolName
-    nullptr, //fallbackSourceFileName
+    nullptr, // fallbackSourceFileName
 };
 
 struct OakumTest : ::testing::Test {
@@ -67,4 +67,11 @@ struct RaiiOakumIgnore {
     ~RaiiOakumIgnore() {
         EXPECT_OAKUM_SUCCESS(oakumStopIgnore());
     }
+};
+
+struct SkippedTest : OakumTest {
+    void SetUp() override {
+        GTEST_SKIP();
+    }
+    void TearDown() override {}
 };

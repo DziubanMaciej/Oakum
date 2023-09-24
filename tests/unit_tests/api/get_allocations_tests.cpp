@@ -1,4 +1,4 @@
-#include "unit_tests/fixtures.h"
+#include "tests/common/fixtures.h"
 
 struct OakumGetAllocationsTest : OakumTestWithAllocationSorting {
     void validateStackFrames(OakumAllocation &allocation) {

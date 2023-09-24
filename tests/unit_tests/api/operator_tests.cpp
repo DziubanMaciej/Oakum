@@ -1,5 +1,5 @@
-#include "unit_tests/allocate_memory_function.h"
-#include "unit_tests/fixtures.h"
+#include "tests/common/allocate_memory_function.h"
+#include "tests/common/fixtures.h"
 
 struct OakumOperatorTest : OakumTest {
     size_t getHugeMemorySize() {

@@ -12,10 +12,11 @@
 #define NO_INLINE_1
 #endif
 
-NO_INLINE_1 std::unique_ptr<char[]> allocateMemoryFunction2(size_t size = 1);
-NO_INLINE_1 std::unique_ptr<char[]> allocateMemoryFunction1(size_t size = 1);
 NO_INLINE_1 std::unique_ptr<char[]> allocateMemoryFunction(size_t size = 1);
-
-NO_INLINE_1 std::unique_ptr<char[]> allocateMemoryFunctionNoThrow2(size_t size = 1);
-NO_INLINE_1 std::unique_ptr<char[]> allocateMemoryFunctionNoThrow1(size_t size = 1);
 NO_INLINE_1 std::unique_ptr<char[]> allocateMemoryFunctionNoThrow(size_t size = 1);
+
+extern const char* allocateMemoryFunctionFile;
+extern const size_t allocateMemoryFunctionDepth;
+extern const char* allocateMemoryFunctionNames[];
+extern const size_t allocateMemoryFunctionBeginLines[];
+extern const size_t allocateMemoryFunctionEndLines[];

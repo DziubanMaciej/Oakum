@@ -1,6 +1,6 @@
-#include "unit_tests/allocate_memory_function.h"
-#include "unit_tests/fixtures.h"
-#include "unit_tests/mock_syscalls.h"
+#include "tests/common/allocate_memory_function.h"
+#include "tests/common/fixtures.h"
+#include "tests/unit_tests/mock_syscalls.h"
 
 #define EXPECT_STR_CONTAINS(substring, string) EXPECT_NE(nullptr, strstr((string), (substring)))
 

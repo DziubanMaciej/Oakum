@@ -14,7 +14,7 @@ cmake ..
 ```
 Additional optional arguments can be passed to the `cmake` command:
   - `-D OAKUM_BUILD_EXAMPLES=1` - builds example applications, which use the *Oakum* library and ilustrate its capabilities.
-  - `-D OAKUM_BUILD_UNIT_TESTS=1` - builds unit tests for the *Oakum* library*.
+  - `-D OAKUM_BUILD_TESTS=1` - builds tests for the *Oakum* library.
   - `-D OAKUM_MAX_STACK_FRAMES_COUNT=<value>` - overrides maximum number stack frames captured in stack traces. Default is 10.
   - `-D OAKUM_GENERATE_DOCS=1` - generate HTML documentation from [oakum_api.h](source/include/oakum/oakum_api.h) file using Doxygen.
   - `-D OAKUM_DOXYGEN_COMMAND=/path/to/doxygen` - overrides command used to run Doxygen. By default the docs build scripts rely on PATH variable.

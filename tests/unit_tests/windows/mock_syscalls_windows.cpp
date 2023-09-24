@@ -1,4 +1,4 @@
-#include "unit_tests/mock_syscalls.h"
+#include "tests/unit_tests/mock_syscalls.h"
 
 RaiiSyscallsBackup MockSyscalls::mockSymbolResolvingSuccess(const char *valueToReturn) {
     RaiiSyscallsBackup backup{};

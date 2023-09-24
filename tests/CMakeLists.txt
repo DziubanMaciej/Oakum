@@ -1,0 +1,3 @@
+add_subdirectory(common)
+add_subdirectory(acceptance_tests)
+add_subdirectory(unit_tests)

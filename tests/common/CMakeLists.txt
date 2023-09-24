@@ -1,0 +1,9 @@
+append_sources(OAKUM_TEST_COMMON_SOURCES OFF)
+add_subdirectories()
+
+source_group (TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${OAKUM_TEST_COMMON_SOURCES})
+add_library(OakumTestCommon STATIC ${OAKUM_TEST_COMMON_SOURCES})
+DependencyManager_link_to_dependency_library(OakumTestCommon PUBLIC googletest gtest)
+target_link_libraries(OakumTestCommon PUBLIC Oakum)
+target_compile_features(OakumTestCommon PUBLIC cxx_std_17)
+target_include_directories(OakumTestCommon PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${OAKUM_SOURCE_DIR})
