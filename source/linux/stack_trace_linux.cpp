@@ -65,10 +65,13 @@ bool StackTraceHelper::resolveSymbols(OakumStackFrame *frames, size_t framesCoun
         Dl_info dlInfo = {};
         if (syscalls.dladdr(frame.address, &dlInfo) != 0) {
             demangleAndSetupString(frame.symbolName, dlInfo.dli_sname);
-        } else if (fallbackSymbolName.has_value()) {
-            setupString(frames[frameIndex].symbolName, fallbackSymbolName.value().c_str());
-        } else {
-            result = false;
+        }
+        if (frame.symbolName == nullptr) {
+            if (fallbackSymbolName.has_value()) {
+                setupString(frames[frameIndex].symbolName, fallbackSymbolName.value().c_str());
+            } else {
+                result = false;
+            }
         }
     }
     return result;

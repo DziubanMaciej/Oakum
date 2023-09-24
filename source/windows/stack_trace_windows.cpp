@@ -37,13 +37,19 @@ bool StackTraceHelper::resolveSymbols(OakumStackFrame *frames, size_t framesCoun
     bool result = true;
     for (size_t frameIndex = 0; frameIndex < framesCount; frameIndex++) {
         const DWORD64 address = reinterpret_cast<DWORD64>(frames[frameIndex].address);
+        OakumStackFrame &frame = frames[frameIndex];
 
         if (syscalls.SymFromAddr(process, address, 0, &symbolInfo.asSymbolInfo)) {
-            setupString(frames[frameIndex].symbolName, symbolInfo.asSymbolInfo.Name);
-        } else if (fallbackSymbolName.has_value()) {
-            setupString(frames[frameIndex].symbolName, fallbackSymbolName.value().c_str());
-        } else {
-            result = false;
+            if (symbolInfo.asSymbolInfo.Name[0] != '\0') {
+                setupString(frame.symbolName, symbolInfo.asSymbolInfo.Name);
+            }
+        }
+        if (frame.symbolName == nullptr) {
+            if (fallbackSymbolName.has_value()) {
+                setupString(frame.symbolName, fallbackSymbolName.value().c_str());
+            } else {
+                result = false;
+            }
         }
     }
     return result;

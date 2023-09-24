@@ -54,6 +54,21 @@ TEST_F(OakumResolveStackTraceSymbolsTest, givenSymbolsResolvingFailWhenOakumReso
     EXPECT_OAKUM_SUCCESS(oakumReleaseAllocations(allocations, allocationCount));
 }
 
+TEST_F(OakumResolveStackTraceSymbolsTest, givenSymbolsResolvingToNullptrWhenOakumResolveStackTraceSymbolsIsCalledThenReturnError) {
+    RaiiSyscallsBackup backup = MockSyscalls::mockSymbolResolvingToNullptr();
+
+    auto memory = allocateMemoryFunction();
+
+    OakumAllocation *allocations = nullptr;
+    size_t allocationCount = 0u;
+    EXPECT_OAKUM_SUCCESS(oakumGetAllocations(&allocations, &allocationCount));
+    EXPECT_NE(nullptr, allocations);
+    EXPECT_EQ(1u, allocationCount);
+
+    EXPECT_EQ(OAKUM_RESOLVING_FAILED, oakumResolveStackTraceSymbols(allocations, allocationCount));
+    EXPECT_OAKUM_SUCCESS(oakumReleaseAllocations(allocations, allocationCount));
+}
+
 using OakumResolveStackTraceSymbolsWithFallbackStringsTest = OakumTestWithFallbackStrings;
 
 TEST_F(OakumResolveStackTraceSymbolsWithFallbackStringsTest, givenSymbolsResolvingSuccessAndFallbackSymbolIsPassWhenOakumResolveStackTraceSymbolsIsCalledThenUseResolvedSymbol) {
@@ -76,6 +91,24 @@ TEST_F(OakumResolveStackTraceSymbolsWithFallbackStringsTest, givenSymbolsResolvi
 
 TEST_F(OakumResolveStackTraceSymbolsWithFallbackStringsTest, givenSymbolsResolvingFailAndFallbackSymbolIsPassWhenOakumResolveStackTraceSymbolsIsCalledThenUseFallbackSymbol) {
     RaiiSyscallsBackup backup = MockSyscalls::mockSymbolResolvingFail();
+
+    auto memory = allocateMemoryFunction();
+
+    OakumAllocation *allocations = nullptr;
+    size_t allocationCount = 0u;
+    EXPECT_OAKUM_SUCCESS(oakumGetAllocations(&allocations, &allocationCount));
+    EXPECT_NE(nullptr, allocations);
+    EXPECT_EQ(1u, allocationCount);
+
+    EXPECT_OAKUM_SUCCESS(oakumResolveStackTraceSymbols(allocations, allocationCount));
+    for (int i = 0; i < allocations[0].stackFramesCount; i++) {
+        EXPECT_STREQ(this->fallbackSymbolName, allocations[0].stackFrames[i].symbolName);
+    }
+    EXPECT_OAKUM_SUCCESS(oakumReleaseAllocations(allocations, allocationCount));
+}
+
+TEST_F(OakumResolveStackTraceSymbolsWithFallbackStringsTest, givenSymbolsResolvingToNullptrAndFallbackSymbolIsPassWhenOakumResolveStackTraceSymbolsIsCalledThenUseFallbackSymbol) {
+    RaiiSyscallsBackup backup = MockSyscalls::mockSymbolResolvingToNullptr();
 
     auto memory = allocateMemoryFunction();
 

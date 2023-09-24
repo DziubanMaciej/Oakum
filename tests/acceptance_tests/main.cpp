@@ -5,12 +5,19 @@
 
 using AcceptanceTest = OakumTest;
 
+// TODO handle this in cmake
 #ifndef NDEBUG
 using AcceptanceTestDebug = OakumTestWithFallbackStrings;
 using AcceptanceTestRelease = SkippedTest;
+using AcceptanceTestWithSymbols = OakumTestWithFallbackStrings;
 #else
 using AcceptanceTestDebug = SkippedTest;
 using AcceptanceTestRelease = OakumTestWithFallbackStrings;
+#ifdef _MSC_VER
+using AcceptanceTestWithSymbols = SkippedTest;
+#else
+using AcceptanceTestWithSymbols = OakumTestWithFallbackStrings;
+#endif
 #endif
 
 // TODO: this could be wrong, but I've got no better idea right now...
@@ -51,7 +58,7 @@ TEST_F(AcceptanceTest, givenMemoryLeakWhenGettingAllocationThenReturnOneAllocati
     EXPECT_EQ(OAKUM_SUCCESS, oakumReleaseAllocations(allocations, allocationsCount));
 }
 
-TEST_F(AcceptanceTest, givenDebugConfigResolvingSymbolsThenReturnCorrectSymbols) {
+TEST_F(AcceptanceTestWithSymbols, givenSymbolsPresentResolvingSymbolsThenReturnCorrectSymbols) {
     auto memory = allocateMemoryFunction(13);
 
     OakumAllocation *allocations{};
