@@ -94,6 +94,8 @@ void OakumController::deallocateMemory(void *pointer) {
             oakum.registerDeallocation(pointer);
         }
     }
+
+    ::free(pointer);
 }
 
 void OakumController::OakumController::registerAllocation(OakumAllocation info) {
@@ -147,12 +149,15 @@ void OakumController::getAllocations(OakumAllocation *&outAllocations, size_t &o
     }
 }
 
-void OakumController::releaseAllocation(OakumAllocation &allocation) {
-    for (size_t stackFrameIndex = 0; stackFrameIndex < allocation.stackFramesCount; stackFrameIndex++) {
-        delete[] allocation.stackFrames[stackFrameIndex].symbolName;
-        delete[] allocation.stackFrames[stackFrameIndex].fileName;
+void OakumController::releaseAllocations(OakumAllocation *allocations, size_t allocationsCount) {
+    for (size_t allocationIndex = 0; allocationIndex < allocationsCount; allocationIndex++) {
+        OakumAllocation &allocation = allocations[allocationIndex];
+        for (size_t stackFrameIndex = 0; stackFrameIndex < allocation.stackFramesCount; stackFrameIndex++) {
+            delete[] allocation.stackFrames[stackFrameIndex].symbolName;
+            delete[] allocation.stackFrames[stackFrameIndex].fileName;
+        }
     }
-    delete &allocation;
+    delete allocations;
 }
 
 bool OakumController::hasAllocations() {

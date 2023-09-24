@@ -59,9 +59,7 @@ OakumResult oakumReleaseAllocations(OakumAllocation *allocations, size_t allocat
     OAKUM_VERIFY_INITIALIZATION(true, OAKUM_UNINITIALIZED);
     OAKUM_VERIFY((allocations == nullptr) != (allocationsCount == 0), OAKUM_INVALID_VALUE);
 
-    for (size_t allocationIndex = 0; allocationIndex < allocationsCount; allocationIndex++) {
-        Oakum::OakumController::getInstance()->releaseAllocation(allocations[allocationIndex]);
-    }
+    Oakum::OakumController::getInstance()->releaseAllocations(allocations, allocationsCount);
     return OAKUM_SUCCESS;
 }
 
