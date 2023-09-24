@@ -1,5 +1,6 @@
 #include "source/linux/child_process.h"
 
+#include <fcntl.h>
 #include <sstream>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -42,11 +43,19 @@ ChildProcess::Result ChildProcess::run() {
 
     if (forkResult == 0) {
         // Child
+
+        // Redirect stdout to the output pipe
         FATAL_ERROR_ON_FAILED_SYSCALL(dup2(outputPipe.getWrite(), STDOUT_FILENO));
-        FATAL_ERROR_ON_FAILED_SYSCALL(dup2(outputPipe.getWrite(), STDERR_FILENO));
         outputPipe.closeWrite();
+
+        // Ignore stderr
+        int devNull = open("/dev/null", O_WRONLY);
+        FATAL_ERROR_ON_FAILED_SYSCALL(devNull);
+        FATAL_ERROR_ON_FAILED_SYSCALL(dup2(devNull, STDERR_FILENO));
+        FATAL_ERROR_ON_FAILED_SYSCALL(close(devNull));
         outputPipe.closeRead();
 
+        // Execute binary
         std::vector<char *> argv = getArgumentsPointers();
         char **rawArgv = argv.data();
         FATAL_ERROR_ON_FAILED_SYSCALL(execvp(argv[0], rawArgv));
