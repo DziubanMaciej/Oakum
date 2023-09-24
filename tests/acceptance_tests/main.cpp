@@ -5,19 +5,18 @@
 
 using AcceptanceTest = OakumTestWithFallbackStrings;
 
-// TODO handle this in cmake
-#ifndef NDEBUG
-using AcceptanceTestDebug = AcceptanceTest;
-using AcceptanceTestRelease = SkippedTest;
-using AcceptanceTestWithSymbols = AcceptanceTest;
+#if OAKUM_SOURCE_LOCATIONS_AVAILABLE == 1
+using AcceptanceTestWithSourceLocations = AcceptanceTest;
+using AcceptanceTestWithoutSourceLocations = SkippedTest;
 #else
-using AcceptanceTestDebug = SkippedTest;
-using AcceptanceTestRelease = AcceptanceTest;
-#ifdef _MSC_VER
-using AcceptanceTestWithSymbols = SkippedTest;
-#else
-using AcceptanceTestWithSymbols = AcceptanceTest;
+using AcceptanceTestWithSourceLocations = SkippedTest;
+using AcceptanceTestWithoutSourceLocations = AcceptanceTest;
 #endif
+
+#if OAKUM_SYMBOLS_AVAILABLE == 1
+using AcceptanceTestWithSymbols = AcceptanceTest;
+#else
+using AcceptanceTestWithSymbols = SkippedTest;
 #endif
 
 // TODO: this could be wrong, but I've got no better idea right now...
@@ -92,7 +91,7 @@ TEST_F(AcceptanceTestWithSymbols, givenSymbolsPresentResolvingSymbolsThenReturnC
     EXPECT_EQ(OAKUM_SUCCESS, oakumReleaseAllocations(allocations, allocationsCount));
 }
 
-TEST_F(AcceptanceTestDebug, givenDebugConfigWhenResolvingSourceLocationsThenReturnLocations) {
+TEST_F(AcceptanceTestWithSourceLocations, givenDebugConfigWhenResolvingSourceLocationsThenReturnLocations) {
     auto memory = allocateMemoryFunction(13);
 
     OakumAllocation *allocations{};
@@ -122,7 +121,7 @@ TEST_F(AcceptanceTestDebug, givenDebugConfigWhenResolvingSourceLocationsThenRetu
     EXPECT_EQ(OAKUM_SUCCESS, oakumReleaseAllocations(allocations, allocationsCount));
 }
 
-TEST_F(AcceptanceTestRelease, givenReleaseConfigWhenResolvingSourceLocationsThenReturnFallbackLocations) {
+TEST_F(AcceptanceTestWithoutSourceLocations, givenReleaseConfigWhenResolvingSourceLocationsThenReturnFallbackLocations) {
     auto memory = allocateMemoryFunction(13);
 
     OakumAllocation *allocations{};
