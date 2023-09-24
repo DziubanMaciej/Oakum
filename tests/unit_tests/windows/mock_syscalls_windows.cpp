@@ -21,6 +21,17 @@ RaiiSyscallsBackup MockSyscalls::mockSymbolResolvingFail() {
     return backup;
 }
 
+RaiiSyscallsBackup MockSyscalls::mockSymbolResolvingToNullptr() {
+    RaiiSyscallsBackup backup{};
+
+    Oakum::syscalls.SymFromAddr = +[](HANDLE hProcess, DWORD64 Address, PDWORD64 Displacement, PSYMBOL_INFO Symbol) -> BOOL {
+        Symbol->Name[0] = '\0';
+        return TRUE;
+    };
+
+    return backup;
+}
+
 RaiiSyscallsBackup MockSyscalls::mockSourceLocationResolvingSuccess(const char *fileToReturn, size_t lineToReturn) {
     RaiiSyscallsBackup backup{};
 

@@ -25,7 +25,8 @@ struct OakumTest : ::testing::Test {
             OakumAllocation *allocations{};
             size_t allocationsCount = 0;
             EXPECT_OAKUM_SUCCESS(oakumGetAllocations(&allocations, &allocationsCount));
-            // EXPECT_OAKUM_SUCCESS(oakumResolveStackTraceSourceLocations(allocations, allocationsCount));
+            EXPECT_OAKUM_SUCCESS(oakumResolveStackTraceSourceLocations(allocations, allocationsCount));
+            EXPECT_OAKUM_SUCCESS(oakumResolveStackTraceSymbols(allocations, allocationsCount));
             EXPECT_OAKUM_SUCCESS(oakumReleaseAllocations(allocations, allocationsCount));
             EXPECT_OAKUM_SUCCESS(oakumDetectLeaks());
         }
