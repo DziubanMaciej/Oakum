@@ -57,14 +57,13 @@ OakumController *OakumController::getInstance() {
 
 void *OakumController::allocateMemory(std::size_t size, bool noThrow) {
     // Allocate memory with actual malloc
-    void* pointer = ::malloc(size);
+    void *pointer = ::malloc(size);
 
     // Handle allocation failure
     if (pointer == nullptr) {
         if (noThrow) {
             return nullptr;
-        }
-        else {
+        } else {
             throw std::bad_alloc{};
         }
     }
