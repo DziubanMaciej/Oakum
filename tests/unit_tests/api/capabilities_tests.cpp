@@ -9,6 +9,7 @@ TEST_F(OakumCapabilitiesTest, givenDefaultInitArgsWhenQueryingCapabilitiesThenRe
 
     EXPECT_FALSE(capabilities.supportStackTraces);
     EXPECT_FALSE(capabilities.supportStackTracesSourceLocations);
+    EXPECT_FALSE(capabilities.supportStackTracesSymbols);
     EXPECT_FALSE(capabilities.threadSafe);
 }
 
@@ -20,6 +21,7 @@ TEST_F(OakumCapabilitiesTest, givenThreadSafetyRequestedWhenQueryingCapabilities
 
     EXPECT_FALSE(capabilities.supportStackTraces);
     EXPECT_FALSE(capabilities.supportStackTracesSourceLocations);
+    EXPECT_FALSE(capabilities.supportStackTracesSymbols);
     EXPECT_TRUE(capabilities.threadSafe);
 }
 
@@ -30,10 +32,7 @@ TEST_F(OakumCapabilitiesTest, givenStackTracesRequestedWhenQueryingCapabilitiesT
     EXPECT_OAKUM_SUCCESS(oakumGetCapabilities(&capabilities));
 
     EXPECT_TRUE(capabilities.supportStackTraces);
-#if OAKUM_SOURCE_LOCATIONS_AVAILABLE == 1
-    EXPECT_TRUE(capabilities.supportStackTracesSourceLocations);
-#else
-    EXPECT_FALSE(capabilities.supportStackTracesSourceLocations);
-#endif
+    EXPECT_EQ(bool(OAKUM_SOURCE_LOCATIONS_AVAILABLE), capabilities.supportStackTracesSourceLocations);
+    EXPECT_EQ(bool(OAKUM_SYMBOLS_AVAILABLE), capabilities.supportStackTracesSymbols);
     EXPECT_FALSE(capabilities.threadSafe);
 }
