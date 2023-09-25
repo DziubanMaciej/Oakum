@@ -24,7 +24,7 @@ public:
     static void deallocateMemory(void *pointer);
 
     void getAllocations(OakumAllocation *&outAllocations, size_t &outAllocationsCount);
-    void releaseAllocations(OakumAllocation *allocations, size_t allocationsCount);
+    void releaseAllocations(OakumAllocation *allocationsToRelease, size_t allocationsCount);
     bool hasAllocations();
 
     bool resolveStackTraceSymbols(OakumAllocation &allocation);

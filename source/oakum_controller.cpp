@@ -149,15 +149,15 @@ void OakumController::getAllocations(OakumAllocation *&outAllocations, size_t &o
     }
 }
 
-void OakumController::releaseAllocations(OakumAllocation *allocations, size_t allocationsCount) {
+void OakumController::releaseAllocations(OakumAllocation * allocationsToRelease, size_t allocationsCount) {
     for (size_t allocationIndex = 0; allocationIndex < allocationsCount; allocationIndex++) {
-        OakumAllocation &allocation = allocations[allocationIndex];
+        OakumAllocation &allocation = allocationsToRelease[allocationIndex];
         for (size_t stackFrameIndex = 0; stackFrameIndex < allocation.stackFramesCount; stackFrameIndex++) {
             delete[] allocation.stackFrames[stackFrameIndex].symbolName;
             delete[] allocation.stackFrames[stackFrameIndex].fileName;
         }
     }
-    delete allocations;
+    delete allocationsToRelease;
 }
 
 bool OakumController::hasAllocations() {
