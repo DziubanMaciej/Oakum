@@ -17,6 +17,7 @@ struct StackTraceHelper {
     static bool resolveSourceLocations(OakumStackFrame *frames, size_t framesCount, const std::optional<std::string> &fallbackSourceFileName);
 
     static void setupString(char *&destination, const char *source);
+
 private:
     constexpr static inline unsigned int skippedFrames = 3;
 };

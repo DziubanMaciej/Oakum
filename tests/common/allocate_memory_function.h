@@ -15,8 +15,8 @@
 NO_INLINE_1 std::unique_ptr<char[]> allocateMemoryFunction(size_t size = 1);
 NO_INLINE_1 std::unique_ptr<char[]> allocateMemoryFunctionNoThrow(size_t size = 1);
 
-extern const char* allocateMemoryFunctionFile;
+extern const char *allocateMemoryFunctionFile;
 extern const size_t allocateMemoryFunctionDepth;
-extern const char* allocateMemoryFunctionNames[];
+extern const char *allocateMemoryFunctionNames[];
 extern const size_t allocateMemoryFunctionBeginLines[];
 extern const size_t allocateMemoryFunctionEndLines[];

@@ -43,7 +43,7 @@ NO_INLINE_1 std::unique_ptr<char[]> allocateMemoryFunctionNoThrow(size_t size) {
     return allocateMemoryFunctionNoThrow1(size);
 }
 
-const char* allocateMemoryFunctionFile = __FILE__;
+const char *allocateMemoryFunctionFile = __FILE__;
 const size_t allocateMemoryFunctionDepth = 3;
 const char *allocateMemoryFunctionNames[] = {
     "allocateMemoryFunction2",
