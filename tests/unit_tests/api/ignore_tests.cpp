@@ -6,13 +6,13 @@ using OakumIgnoreTest = OakumTest;
 TEST_F(OakumIgnoreTest, givenOakumNotInitializedWhenCallingOakumIgnoreFunctionsThenFail) {
     size_t returned{};
     size_t available{};
-    EXPECT_OAKUM_SUCCESS(oakumDeinit(false));
     EXPECT_EQ(OAKUM_UNINITIALIZED, oakumStartIgnore());
     EXPECT_EQ(OAKUM_UNINITIALIZED, oakumStopIgnore());
-    EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
 }
 
 TEST_F(OakumIgnoreTest, givenOakumIgnoreIsStartedWhenMemoryIsAllocatedThenItIsNotRecorded) {
+    EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
+
     OakumAllocation *allocations = nullptr;
     size_t allocationCount = 0u;
     EXPECT_OAKUM_SUCCESS(oakumStartIgnore());
@@ -33,6 +33,8 @@ TEST_F(OakumIgnoreTest, givenOakumIgnoreIsStartedWhenMemoryIsAllocatedThenItIsNo
 }
 
 TEST_F(OakumIgnoreTest, givenOakumIgnoreIsCalledMultipleTimesWhenMemoryIsAllocatedThenItIgnoreStateIsRefcounted) {
+    EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
+
     OakumAllocation *allocations = nullptr;
     size_t allocationCount = 0u;
     EXPECT_OAKUM_SUCCESS(oakumStartIgnore());
@@ -64,6 +66,8 @@ TEST_F(OakumIgnoreTest, givenOakumIgnoreIsCalledMultipleTimesWhenMemoryIsAllocat
 }
 
 TEST_F(OakumIgnoreTest, givenOakumStopIgnoreIsCalledWhenIgnoreCountIsZeroThenReturnError) {
+    EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
+
     EXPECT_EQ(OAKUM_NOT_IGNORING, oakumStopIgnore());
 
     EXPECT_OAKUM_SUCCESS(oakumStartIgnore());

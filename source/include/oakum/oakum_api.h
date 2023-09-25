@@ -27,11 +27,11 @@ using OakumAllocationIdType = uint64_t;
 
 /// @brief Input configuration of the library via #oakumInit function
 struct OakumInitArgs {
-    bool trackStackTraces;              ///< Enable stack trace tracking. See #OakumStackFrame for more information.
-    bool threadSafe;                    ///< Enable thread safety inside the library.
-    bool sortAllocations;               ///< Sort allocations by their unique identifier in #oakumGetAllocations
-    const char *fallbackSymbolName;     ///< Symbol name to be used, when #oakumResolveStackTraceSymbols fails to resolve the actual name. May be null.
-    const char *fallbackSourceFileName; ///< Source file name to be used, when #oakumResolveStackTraceSourceLocations fails to resolve the actual name. May be null.
+    bool trackStackTraces = false;                ///< Enable stack trace tracking. See #OakumStackFrame for more information.
+    bool threadSafe = false;                      ///< Enable thread safety inside the library.
+    bool sortAllocations = false;                 ///< Sort allocations by their unique identifier in #oakumGetAllocations
+    const char *fallbackSymbolName = nullptr;     ///< Symbol name to be used, when #oakumResolveStackTraceSymbols fails to resolve the actual name. May be null.
+    const char *fallbackSourceFileName = nullptr; ///< Source file name to be used, when #oakumResolveStackTraceSourceLocations fails to resolve the actual name. May be null.
 };
 
 /// @brief Output configuration of the library reported by #oakumGetCapabilities function.

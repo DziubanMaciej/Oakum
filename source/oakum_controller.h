@@ -18,7 +18,7 @@ public:
     static bool isInitialized();
     static OakumController *getInstance();
 
-    const OakumCapabilities &getCapabilities() { return capabilities; }
+    const OakumCapabilities &getCapabilities() { return capabilities; } // TODO add unit tests for capabilities
 
     static void *allocateMemory(std::size_t size, bool noThrow);
     static void deallocateMemory(void *pointer);

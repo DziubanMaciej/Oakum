@@ -2,6 +2,7 @@
 #include "tests/common/fixtures.h"
 
 TEST(OakumInitTest, givenOakumInitAndDeinitCalledWhenEnvironmentIsCleanThenSuccessIsReturned) {
+    OakumInitArgs defaultInitArgs{};
     EXPECT_OAKUM_SUCCESS(oakumInit(&defaultInitArgs));
     EXPECT_OAKUM_SUCCESS(oakumDeinit(false));
 
@@ -10,6 +11,7 @@ TEST(OakumInitTest, givenOakumInitAndDeinitCalledWhenEnvironmentIsCleanThenSucce
 }
 
 TEST(OakumInitTest, givenOakumInitCalledMultipleTimesWhenEnvironmentIsCleanThenOnlyTheFirstOneSucceeds) {
+    OakumInitArgs defaultInitArgs{};
     EXPECT_OAKUM_SUCCESS(oakumInit(&defaultInitArgs));
     EXPECT_EQ(OAKUM_ALREADY_INITIALIZED, oakumInit(nullptr));
     EXPECT_EQ(OAKUM_ALREADY_INITIALIZED, oakumInit(nullptr));
@@ -21,6 +23,7 @@ TEST(OakumInitTest, givenOakumDeinitCalledWhenOakumIsNotInitializedThenFail) {
 }
 
 TEST(OakumInitTest, givenLeaksDetectionEnabledWhenOakumDeinitIsCalledThenDetectLeaks) {
+    OakumInitArgs defaultInitArgs{};
     EXPECT_OAKUM_SUCCESS(oakumInit(&defaultInitArgs));
     EXPECT_OAKUM_SUCCESS(oakumDeinit(true));
 
