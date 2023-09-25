@@ -12,7 +12,7 @@ TEST_F(OakumOperatorTest, givenFailedMallocWhenAllocatingMemoryThenFailAccording
     EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
 
     // Throwing new. We have to check return value, because the compiler may optimize it out
-    char *mem;
+    char *mem = {};
     EXPECT_THROW(mem = new char[getHugeMemorySize()](), std::bad_alloc);
     EXPECT_EQ(nullptr, mem);
 
