@@ -1,11 +1,15 @@
 #!/bin/bash
 
 install_clang_format() {
-    which clang-format && return 0
+    which clang-format && {
+        echo "clang-format already installed"
+        return 0
+    }
 
     which apt-get
     if [ $? != 0 ]; then
         if [ `dpkg --list | grep " clang-format " | wc -l` -eq 0 ]; then
+            echo "Installing clang-format with apt-get"
             sudo apt-get install clang-format || return 1
         fi
     fi
