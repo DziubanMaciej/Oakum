@@ -56,30 +56,36 @@ OakumController *OakumController::getInstance() {
 }
 
 void *OakumController::allocateMemory(std::size_t size, bool noThrow) {
-    OakumAllocation info{};
-    info.size = size;
-    info.pointer = ::malloc(size);
-    info.noThrow = noThrow;
-    info.stackFramesCount = 0;
+    // Allocate memory with actual malloc
+    void* pointer = ::malloc(size);
 
-    const bool success = info.pointer != nullptr;
-    if (success && isInitialized()) {
+    // Handle allocation failure
+    if (pointer == nullptr) {
+        if (noThrow) {
+            return nullptr;
+        }
+        else {
+            throw std::bad_alloc{};
+        }
+    }
+
+    // Register memory allocation in instance
+    if (isInitialized()) {
         OakumController &oakum = *getInstance();
-        if (!getInstance()->getIgnoreState()) {
+        if (!oakum.getIgnoreState()) {
+            OakumAllocation info{};
+            info.size = size;
+            info.pointer = pointer;
+            info.noThrow = noThrow;
+            info.stackFramesCount = 0;
+
             const auto lock = oakum.getAllocationsLock();
             oakum.registerAllocation(info);
         }
     }
 
-    if (!success) {
-        if (noThrow) {
-            return nullptr;
-        } else {
-            throw std::bad_alloc{};
-        }
-    }
-
-    return info.pointer;
+    // Return pointer to the caller
+    return pointer;
 }
 
 void OakumController::deallocateMemory(void *pointer) {
