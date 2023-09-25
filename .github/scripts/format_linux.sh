@@ -24,4 +24,10 @@ install_clang_format || {
 }
 
 root_dir=`echo ${BASH_SOURCE[0]} | xargs realpath | xargs dirname | xargs dirname | xargs dirname` # TODO find better way to go up three levels? Adding ".." is ugly.
-find "$root_dir" | grep -E "*\.(cpp|inl|h|c|hpp)$" | xargs clang-format -i --verbose
+find .                                                                 \
+    -type f                                                            \
+    \( -name "*.cpp" -o -name "*.c" -o -name "*.h" -o -name "*.hpp" \) \
+    -not -path "./third_party/*"                                       \
+    -not -path "./build*/*"                                            \
+    -print                                                             \
+| xargs clang-format -i --verbose
