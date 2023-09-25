@@ -7,4 +7,4 @@ DependencyManager_link_to_dependency_library(OakumTestCommon PUBLIC googletest g
 target_link_libraries(OakumTestCommon PUBLIC Oakum)
 target_compile_features(OakumTestCommon PUBLIC cxx_std_17)
 target_include_directories(OakumTestCommon PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${OAKUM_SOURCE_DIR})
-target_env_specific_capabilities(OakumTestCommon PUBLIC)
+#target_env_specific_capabilities(OakumTestCommon PUBLIC)
