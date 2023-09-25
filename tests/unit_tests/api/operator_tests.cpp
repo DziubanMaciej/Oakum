@@ -10,7 +10,13 @@ auto getHugeMemorySize() {
 
 TEST_F(OakumOperatorTest, givenFailedMallocWhenAllocatingMemoryThenFailAccordingly) {
     EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
-    EXPECT_THROW(new char[getHugeMemorySize()](), std::bad_alloc);
+
+    // Throwing new. We have to check return value, because the compiler may optimize it out
+    char *mem;
+    EXPECT_THROW(mem = new char[getHugeMemorySize()](), std::bad_alloc);
+    EXPECT_NE(nullptr, mem);
+
+    // Non-throwing new
     EXPECT_EQ(nullptr, new (std::nothrow) char[getHugeMemorySize()]());
 }
 
@@ -32,6 +38,10 @@ TEST_F(OakumOperatorTest, givenSucceededMallocWhenAllocatingMemoryThenSaveCorrec
     int *mem1 = new int[2]();
     int *mem2 = new (std::nothrow) int();
     int *mem3 = new (std::nothrow) int[2]();
+
+    // We have to check return values of throwing operators, because the compiler may optimize them out
+    EXPECT_NE(nullptr, mem0);
+    EXPECT_NE(nullptr, mem1);
 
     // Validate metadata
     // We don't have a field for isArray... Probably not useful?
