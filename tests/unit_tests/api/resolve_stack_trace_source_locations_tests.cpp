@@ -4,7 +4,22 @@
 
 #define EXPECT_STR_CONTAINS(substring, string) EXPECT_NE(nullptr, strstr((string), (substring)))
 
-using OakumResolveStackTraceSourceLocationsTest = OakumTest;
+template <bool expectedSupport>
+struct OakumResolveStackTraceSourceLocationsTestBase : OakumTest {
+    void SetUp() override {
+        OakumInitArgs initArgsLocal{};
+        initArgsLocal.trackStackTraces = true;
+        EXPECT_OAKUM_SUCCESS(oakumInit(&initArgsLocal));
+        bool sourceLocationsSupported = isSourceLocationResolvingSupported();
+        EXPECT_OAKUM_SUCCESS(oakumDeinit(true));
+        if (sourceLocationsSupported != expectedSupport) {
+            GTEST_SKIP();
+        }
+    }
+};
+
+using OakumResolveStackTraceSourceLocationsTest = OakumResolveStackTraceSourceLocationsTestBase<true>;
+using OakumResolveStackTraceSourceLocationsUnsupportedTest = OakumResolveStackTraceSourceLocationsTestBase<false>;
 
 TEST_F(OakumResolveStackTraceSourceLocationsTest, givenOakumNotInitializedWhenCallingOakumResolveStackTraceSourceLocationsThenFail) {
     EXPECT_EQ(OAKUM_UNINITIALIZED, oakumResolveStackTraceSourceLocations(nullptr, 0u));
@@ -178,4 +193,12 @@ TEST_F(OakumResolveStackTraceSourceLocationsTest, givenNoStackTracesWhenCallingR
     EXPECT_EQ(OAKUM_FEATURE_NOT_SUPPORTED, oakumResolveStackTraceSourceLocations(allocations, allocationCount));
 
     EXPECT_OAKUM_SUCCESS(oakumReleaseAllocations(allocations, allocationCount));
+}
+
+TEST_F(OakumResolveStackTraceSourceLocationsUnsupportedTest, givenSourceLocationsUnsupportedWhenResolvingSourceLocationsThenReturnFeatureUnsupported) {
+    EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
+
+    OakumAllocation *allocations = nullptr;
+    size_t allocationCount = 0u;
+    EXPECT_EQ(OAKUM_FEATURE_NOT_SUPPORTED, oakumResolveStackTraceSourceLocations(allocations, allocationCount));
 }
