@@ -65,6 +65,8 @@ TEST_F(AcceptanceTest, givenMemoryLeakWhenGettingAllocationThenReturnOneAllocati
 
 TEST_F(AcceptanceTestWithSymbols, givenSymbolsPresentResolvingSymbolsThenReturnCorrectSymbols) {
     initArgs.trackStackTraces = true;
+    initArgs.fallbackSymbolName = "fallbackSymbol";
+    initArgs.fallbackSourceFileName = "fallbackFile";
     EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
 
     auto memory = allocateMemoryFunction(13);
