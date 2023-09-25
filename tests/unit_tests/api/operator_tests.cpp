@@ -14,7 +14,7 @@ TEST_F(OakumOperatorTest, givenFailedMallocWhenAllocatingMemoryThenFailAccording
     // Throwing new. We have to check return value, because the compiler may optimize it out
     char *mem;
     EXPECT_THROW(mem = new char[getHugeMemorySize()](), std::bad_alloc);
-    EXPECT_NE(nullptr, mem);
+    EXPECT_EQ(nullptr, mem);
 
     // Non-throwing new
     EXPECT_EQ(nullptr, new (std::nothrow) char[getHugeMemorySize()]());
