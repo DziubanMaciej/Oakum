@@ -39,6 +39,7 @@ TEST_F(OakumOperatorTest, givenSucceededMallocWhenAllocatingMemoryThenSaveCorrec
     EXPECT_FALSE(allocations[1].noThrow);
     EXPECT_TRUE(allocations[2].noThrow);
     EXPECT_TRUE(allocations[3].noThrow);
+    EXPECT_EQ(OAKUM_SUCCESS, oakumReleaseAllocations(allocations, allocationsCount));
 
     // Test array and non-array delete
     // All deletes should be sized
