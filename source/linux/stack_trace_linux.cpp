@@ -43,7 +43,6 @@ static std::pair<std::string, size_t> addr2line(const char *binaryName, size_t v
 }
 
 bool StackTraceHelper::supportsSourceLocations() {
-    // TODO add flags from CMake
     std::string output = syscalls.runProcessForOutput("which", {"addr2line"});
     return !output.empty();
 }

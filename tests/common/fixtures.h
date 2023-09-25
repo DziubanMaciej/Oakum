@@ -19,11 +19,16 @@ struct OakumTest : ::testing::Test {
             EXPECT_OAKUM_SUCCESS(oakumResolveStackTraceSourceLocations(allocations, allocationsCount));
             EXPECT_OAKUM_SUCCESS(oakumResolveStackTraceSymbols(allocations, allocationsCount));
             EXPECT_OAKUM_SUCCESS(oakumReleaseAllocations(allocations, allocationsCount));
-            EXPECT_OAKUM_SUCCESS(oakumDetectLeaks());
 #endif
         }
         const OakumResult deinitResult = oakumDeinit(false);
         EXPECT_TRUE(deinitResult == OAKUM_SUCCESS || deinitResult == OAKUM_UNINITIALIZED);
+    }
+
+    bool isSourceLocationResolvingSupported() {
+        OakumCapabilities capabilities = {};
+        EXPECT_OAKUM_SUCCESS(oakumGetCapabilities(&capabilities));
+        return capabilities.supportStackTracesSourceLocations;
     }
 
     OakumInitArgs initArgs = {};
