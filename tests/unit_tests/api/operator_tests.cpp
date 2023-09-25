@@ -5,7 +5,7 @@ using OakumOperatorTest = OakumTest;
 
 auto getHugeMemorySize() {
     // This has to be in a separate function, so the compiler won't complain about the size being too big.
-    return std::numeric_limits<size_t>::max() / 3; // this should not be possible to allocate (recheck in year 2050)
+    return std::numeric_limits<size_t>::max() / 2; // this should not be possible to allocate (recheck in year 2050)
 }
 
 TEST_F(OakumOperatorTest, givenFailedMallocWhenAllocatingMemoryThenFailAccordingly) {
