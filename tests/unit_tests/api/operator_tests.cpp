@@ -3,12 +3,15 @@
 
 using OakumOperatorTest = OakumTest;
 
-TEST_F(OakumOperatorTest, givenFailedMallocWhenAllocatingMemoryThenFailAccordingly) {
-    const size_t hugeMemorySize = std::numeric_limits<size_t>::max() / 3; // this should not be possible to allocate (recheck in year 2050)
+auto getHugeMemorySize() {
+    // This has to be in a separate function, so the compiler won't complain about the size being too big.
+    return std::numeric_limits<size_t>::max() / 3; // this should not be possible to allocate (recheck in year 2050)
+}
 
+TEST_F(OakumOperatorTest, givenFailedMallocWhenAllocatingMemoryThenFailAccordingly) {
     EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
-    EXPECT_THROW(new char[hugeMemorySize](), std::bad_alloc);
-    EXPECT_EQ(nullptr, new (std::nothrow) char[hugeMemorySize]());
+    EXPECT_THROW(new char[getHugeMemorySize()](), std::bad_alloc);
+    EXPECT_EQ(nullptr, new (std::nothrow) char[getHugeMemorySize()]());
 }
 
 TEST_F(OakumOperatorTest, givenNullptrWhenCallingDeleteThenNoErrorsAreThrown) {
@@ -47,5 +50,4 @@ TEST_F(OakumOperatorTest, givenSucceededMallocWhenAllocatingMemoryThenSaveCorrec
     delete[] mem1;
     delete mem2;
     delete[] mem3;
-
 }
