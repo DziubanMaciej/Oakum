@@ -5,7 +5,7 @@
 
 #include <thread>
 
-using AcceptanceTest = OakumTestWithFallbackStrings;
+using AcceptanceTest = OakumTest;
 
 #if OAKUM_SOURCE_LOCATIONS_AVAILABLE == 1
 using AcceptanceTestWithSourceLocations = AcceptanceTest;
@@ -29,6 +29,8 @@ constexpr bool operatorInlined = false;
 #endif
 
 TEST_F(AcceptanceTest, givenMemoryLeakWhenDetectingLeaksThenReturnTrue) {
+    EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
+
     EXPECT_EQ(OAKUM_SUCCESS, oakumDetectLeaks());
     auto memory = allocateMemoryFunction();
     EXPECT_EQ(OAKUM_LEAKS_DETECTED, oakumDetectLeaks());
@@ -37,6 +39,8 @@ TEST_F(AcceptanceTest, givenMemoryLeakWhenDetectingLeaksThenReturnTrue) {
 }
 
 TEST_F(AcceptanceTest, givenMemoryLeakWhenGettingAllocationThenReturnOneAllocationWithCorrectMetadata) {
+    EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
+
     OakumAllocation *allocations{};
     size_t allocationsCount{};
     EXPECT_EQ(OAKUM_SUCCESS, oakumGetAllocations(&allocations, &allocationsCount));
@@ -60,6 +64,11 @@ TEST_F(AcceptanceTest, givenMemoryLeakWhenGettingAllocationThenReturnOneAllocati
 }
 
 TEST_F(AcceptanceTestWithSymbols, givenSymbolsPresentResolvingSymbolsThenReturnCorrectSymbols) {
+    initArgs.trackStackTraces = true;
+    initArgs.fallbackSymbolName = "fallbackSymbol";
+    initArgs.fallbackSourceFileName = "fallbackFile";
+    EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
+
     auto memory = allocateMemoryFunction(13);
 
     OakumAllocation *allocations{};
@@ -94,6 +103,9 @@ TEST_F(AcceptanceTestWithSymbols, givenSymbolsPresentResolvingSymbolsThenReturnC
 }
 
 TEST_F(AcceptanceTestWithSourceLocations, givenDebugConfigWhenResolvingSourceLocationsThenReturnLocations) {
+    initArgs.trackStackTraces = true;
+    EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
+
     auto memory = allocateMemoryFunction(13);
 
     OakumAllocation *allocations{};
@@ -124,6 +136,11 @@ TEST_F(AcceptanceTestWithSourceLocations, givenDebugConfigWhenResolvingSourceLoc
 }
 
 TEST_F(AcceptanceTestWithoutSourceLocations, givenReleaseConfigWhenResolvingSourceLocationsThenReturnFallbackLocations) {
+    initArgs.trackStackTraces = true;
+    initArgs.fallbackSourceFileName = "fallbackFile";
+    initArgs.fallbackSymbolName = "fallbackSymbol";
+    EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
+
     auto memory = allocateMemoryFunction(13);
 
     OakumAllocation *allocations{};
@@ -153,7 +170,9 @@ TEST_F(AcceptanceTestWithoutSourceLocations, givenReleaseConfigWhenResolvingSour
 }
 
 TEST_F(AcceptanceTest, givenThreadSafeOakumWhenMultiThreadedAllocationsAreDoneThenCorrectlyDetectLeaks) {
-    ASSERT_TRUE(initArgs.threadSafe);
+    initArgs.threadSafe = true;
+    initArgs.trackStackTraces = true;
+    EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
 
     auto threadFunction = []() {
         constexpr size_t allocCount = 20;
@@ -181,7 +200,9 @@ TEST_F(AcceptanceTest, givenThreadSafeOakumWhenMultiThreadedAllocationsAreDoneTh
 }
 
 TEST_F(AcceptanceTest, givenThreadSafeOakumWhenMultiThreadedAllocationsAreDoneThenCorrectlyReturnLeaks) {
-    ASSERT_TRUE(initArgs.threadSafe);
+    initArgs.threadSafe = true;
+    initArgs.trackStackTraces = true;
+    EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
 
     auto threadFunction = []() {
         constexpr size_t allocCount = 20;

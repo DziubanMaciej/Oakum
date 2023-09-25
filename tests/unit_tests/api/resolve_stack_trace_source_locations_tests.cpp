@@ -4,35 +4,25 @@
 
 #define EXPECT_STR_CONTAINS(substring, string) EXPECT_NE(nullptr, strstr((string), (substring)))
 
-struct OakumResolveStackTraceSourceLocationsTest : OakumTest {
-    void SetUp() override {
-        OakumTest::SetUp();
-
-        OakumCapabilities capabilities{};
-        EXPECT_OAKUM_SUCCESS(oakumGetCapabilities(&capabilities));
-        if (!capabilities.supportStackTracesSourceLocations) {
-            RaiiOakumIgnore ignore;
-            GTEST_SKIP();
-        }
-    }
-};
+using OakumResolveStackTraceSourceLocationsTest = OakumTest;
 
 TEST_F(OakumResolveStackTraceSourceLocationsTest, givenOakumNotInitializedWhenCallingOakumResolveStackTraceSourceLocationsThenFail) {
-    EXPECT_OAKUM_SUCCESS(oakumDeinit(false));
     EXPECT_EQ(OAKUM_UNINITIALIZED, oakumResolveStackTraceSourceLocations(nullptr, 0u));
-    EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
 }
 
 TEST_F(OakumResolveStackTraceSourceLocationsTest, givenNullArgumentsWhenCallingOakumResolveStackTraceSourceLocationsThenReturnCorrectValues) {
-    OakumAllocation *allocations = reinterpret_cast<OakumAllocation *>(0x1234);
-    size_t allocationCount = 1u;
+    initArgs.trackStackTraces = true;
+    EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
 
-    EXPECT_EQ(OAKUM_INVALID_VALUE, oakumResolveStackTraceSourceLocations(allocations, 0u));
-    EXPECT_EQ(OAKUM_INVALID_VALUE, oakumResolveStackTraceSourceLocations(nullptr, allocationCount));
+    EXPECT_EQ(OAKUM_INVALID_VALUE, oakumResolveStackTraceSourceLocations(reinterpret_cast<OakumAllocation *>(0x1234), 0u));
+    EXPECT_EQ(OAKUM_INVALID_VALUE, oakumResolveStackTraceSourceLocations(nullptr, 1u));
     EXPECT_EQ(OAKUM_SUCCESS, oakumResolveStackTraceSourceLocations(nullptr, 0u));
 }
 
 TEST_F(OakumResolveStackTraceSourceLocationsTest, givenSymbolsResolvingSuccessWhenOakumResolveStackTraceSourceLocationsIsCalledThenReturnCorrectStackTrace) {
+    initArgs.trackStackTraces = true;
+    EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
+
     RaiiSyscallsBackup backup = MockSyscalls::mockSourceLocationResolvingSuccess("myFile", 19);
 
     auto memory = allocateMemoryFunction();
@@ -52,6 +42,9 @@ TEST_F(OakumResolveStackTraceSourceLocationsTest, givenSymbolsResolvingSuccessWh
 }
 
 TEST_F(OakumResolveStackTraceSourceLocationsTest, givenSymbolsResolvingFailWhenOakumResolveStackTraceSourceLocationsIsCalledThenError) {
+    initArgs.trackStackTraces = true;
+    EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
+
     RaiiSyscallsBackup backup = MockSyscalls::mockSourceLocationResolvingFail();
 
     auto memory = allocateMemoryFunction();
@@ -66,9 +59,11 @@ TEST_F(OakumResolveStackTraceSourceLocationsTest, givenSymbolsResolvingFailWhenO
     EXPECT_OAKUM_SUCCESS(oakumReleaseAllocations(allocations, allocationCount));
 }
 
-using OakumResolveStackTraceSourceLocationsWithFallbackStringsTest = OakumTestWithFallbackStrings;
+TEST_F(OakumResolveStackTraceSourceLocationsTest, givenSymbolsResolvingSuccessAndFallbackFileIsPassedWhenOakumResolveStackTraceSourceLocationsIsCalledThenUseResolvedFile) {
+    initArgs.trackStackTraces = true;
+    initArgs.fallbackSourceFileName = "fallbackFile";
+    EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
 
-TEST_F(OakumResolveStackTraceSourceLocationsWithFallbackStringsTest, givenSymbolsResolvingSuccessAndFallbackFileIsPassedWhenOakumResolveStackTraceSourceLocationsIsCalledThenUseResolvedFile) {
     RaiiSyscallsBackup backup = MockSyscalls::mockSourceLocationResolvingSuccess("myFile", 19);
 
     auto memory = allocateMemoryFunction();
@@ -87,7 +82,11 @@ TEST_F(OakumResolveStackTraceSourceLocationsWithFallbackStringsTest, givenSymbol
     EXPECT_OAKUM_SUCCESS(oakumReleaseAllocations(allocations, allocationCount));
 }
 
-TEST_F(OakumResolveStackTraceSourceLocationsWithFallbackStringsTest, givenSymbolsResolvingFailAndFallbackFileIsPassedWhenOakumResolveStackTraceSourceLocationsIsCalledThenUseFallbackFile) {
+TEST_F(OakumResolveStackTraceSourceLocationsTest, givenSymbolsResolvingFailAndFallbackFileIsPassedWhenOakumResolveStackTraceSourceLocationsIsCalledThenUseFallbackFile) {
+    initArgs.trackStackTraces = true;
+    initArgs.fallbackSourceFileName = "fallbackFile";
+    EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
+
     RaiiSyscallsBackup backup = MockSyscalls::mockSourceLocationResolvingFail();
 
     auto memory = allocateMemoryFunction();
@@ -100,13 +99,17 @@ TEST_F(OakumResolveStackTraceSourceLocationsWithFallbackStringsTest, givenSymbol
 
     EXPECT_OAKUM_SUCCESS(oakumResolveStackTraceSourceLocations(allocations, allocationCount));
     for (int i = 0; i < allocations[0].stackFramesCount; i++) {
-        EXPECT_STREQ(fallbackSourceFileName, allocations[0].stackFrames[i].fileName);
+        EXPECT_STREQ("fallbackFile", allocations[0].stackFrames[i].fileName);
         EXPECT_EQ(0, allocations[0].stackFrames[i].fileLine);
     }
     EXPECT_OAKUM_SUCCESS(oakumReleaseAllocations(allocations, allocationCount));
 }
 
 TEST_F(OakumResolveStackTraceSourceLocationsTest, givenSourceLocationsAlreadyResolvedWhenOakumResolveStackTraceSourceLocationsIsCalledThenReturnCorrectStackTrace) {
+    initArgs.trackStackTraces = true;
+    initArgs.fallbackSourceFileName = "fallbackFile";
+    EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
+
     RaiiSyscallsBackup backup1 = MockSyscalls::mockSourceLocationResolvingSuccess("myFile", 19);
 
     auto memory = allocateMemoryFunction();
@@ -135,6 +138,11 @@ TEST_F(OakumResolveStackTraceSourceLocationsTest, givenSourceLocationsAlreadyRes
 }
 
 TEST_F(OakumResolveStackTraceSourceLocationsTest, givenSymbolsResolvedWhenOakumResolveStackTraceSourceLocationsIsCalledThenReturnCorrectStackTrace) {
+    initArgs.trackStackTraces = true;
+    initArgs.fallbackSourceFileName = "fallbackFile";
+    initArgs.fallbackSymbolName = "fallbackSymbol";
+    EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
+
     RaiiSyscallsBackup backup1 = MockSyscalls::mockSourceLocationResolvingSuccess("myFile", 19);
     RaiiSyscallsBackup backup2 = MockSyscalls::mockSymbolResolvingSuccess("mySymbol");
 
@@ -156,9 +164,9 @@ TEST_F(OakumResolveStackTraceSourceLocationsTest, givenSymbolsResolvedWhenOakumR
     EXPECT_OAKUM_SUCCESS(oakumReleaseAllocations(allocations, allocationCount));
 }
 
-using OakumResolveStackTraceSourceLocationsWithoutStackTracesTest = OakumTestWithoutStackTraces;
+TEST_F(OakumResolveStackTraceSourceLocationsTest, givenNoStackTracesWhenCallingResolveStackTraceSymbolsThenReturnFeatureUnsupported) {
+    EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
 
-TEST_F(OakumResolveStackTraceSourceLocationsWithoutStackTracesTest, givenNoStackTracesWhenCallingResolveStackTraceSymbolsThenReturnFeatureUnsupported) {
     auto memory = allocateMemoryFunction();
 
     OakumAllocation *allocations = nullptr;

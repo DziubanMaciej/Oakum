@@ -3,13 +3,9 @@
 
 using OakumDetectLeaksTest = OakumTest;
 
-TEST_F(OakumDetectLeaksTest, givenOakumNotInitializedWhenCallingOakumDetectLeaksThenFail) {
-    EXPECT_OAKUM_SUCCESS(oakumDeinit(false));
-    EXPECT_EQ(OAKUM_UNINITIALIZED, oakumReleaseAllocations(nullptr, 0u));
-    EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
-}
-
 TEST_F(OakumDetectLeaksTest, givenLeaksWhenCallingOakumDetectLeaksThenReportLeaks) {
+    EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
+
     EXPECT_OAKUM_SUCCESS(oakumDetectLeaks());
 
     auto memory0 = allocateMemoryFunction();

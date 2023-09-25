@@ -7,21 +7,12 @@
 
 #define EXPECT_OAKUM_SUCCESS(expr) EXPECT_EQ(OAKUM_SUCCESS, (expr))
 
-const inline OakumInitArgs defaultInitArgs{
-    true,    // trackStackTraces
-    true,    // threadSafe
-    false,   // sortAllocations
-    nullptr, // fallbackSymbolName
-    nullptr, // fallbackSourceFileName
-};
-
 struct OakumTest : ::testing::Test {
-    void SetUp() override {
-        EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
-    }
-
     void TearDown() override {
-        if (oakumDetectLeaks() != OAKUM_SUCCESS) {
+        if (oakumDetectLeaks() == OAKUM_LEAKS_DETECTED) {
+            GTEST_NONFATAL_FAILURE_("Leaks detected at the end of test");
+#if 0
+            // Enable this code to debug the leak
             OakumAllocation *allocations{};
             size_t allocationsCount = 0;
             EXPECT_OAKUM_SUCCESS(oakumGetAllocations(&allocations, &allocationsCount));
@@ -29,36 +20,20 @@ struct OakumTest : ::testing::Test {
             EXPECT_OAKUM_SUCCESS(oakumResolveStackTraceSymbols(allocations, allocationsCount));
             EXPECT_OAKUM_SUCCESS(oakumReleaseAllocations(allocations, allocationsCount));
             EXPECT_OAKUM_SUCCESS(oakumDetectLeaks());
+#endif
         }
-        EXPECT_OAKUM_SUCCESS(oakumDeinit(false));
+        const OakumResult deinitResult = oakumDeinit(false);
+        EXPECT_TRUE(deinitResult == OAKUM_SUCCESS || deinitResult == OAKUM_UNINITIALIZED);
     }
 
-    OakumInitArgs initArgs = defaultInitArgs;
+    OakumInitArgs initArgs = {};
 };
 
-struct OakumTestWithoutStackTraces : OakumTest {
+struct SkippedTest : OakumTest {
     void SetUp() override {
-        initArgs.trackStackTraces = false;
-        OakumTest::SetUp();
+        GTEST_SKIP();
     }
-};
-
-struct OakumTestWithFallbackStrings : OakumTest {
-    void SetUp() override {
-        initArgs.fallbackSymbolName = fallbackSymbolName;
-        initArgs.fallbackSourceFileName = fallbackSourceFileName;
-        OakumTest::SetUp();
-    }
-
-    const char *fallbackSymbolName = "<symbol>";
-    const char *fallbackSourceFileName = "<fileName>";
-};
-
-struct OakumTestWithAllocationSorting : OakumTest {
-    void SetUp() override {
-        initArgs.sortAllocations = true;
-        OakumTest::SetUp();
-    }
+    void TearDown() override {}
 };
 
 struct RaiiOakumIgnore {
@@ -68,11 +43,4 @@ struct RaiiOakumIgnore {
     ~RaiiOakumIgnore() {
         EXPECT_OAKUM_SUCCESS(oakumStopIgnore());
     }
-};
-
-struct SkippedTest : OakumTest {
-    void SetUp() override {
-        GTEST_SKIP();
-    }
-    void TearDown() override {}
 };

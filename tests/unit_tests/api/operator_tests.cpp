@@ -7,7 +7,10 @@ struct OakumOperatorTest : OakumTest {
     }
 };
 
+// TODO test all possible operators
+
 TEST_F(OakumOperatorTest, givenNoThrowNotSpecifiedWhenMemoryAllocationFailsThenThrowBadAlloc) {
+    EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
     EXPECT_THROW(allocateMemoryFunction(getHugeMemorySize()), std::bad_alloc);
     EXPECT_EQ(nullptr, allocateMemoryFunctionNoThrow(getHugeMemorySize()));
 }
