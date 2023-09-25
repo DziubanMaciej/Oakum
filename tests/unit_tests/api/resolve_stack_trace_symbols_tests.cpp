@@ -10,7 +10,7 @@ struct OakumResolveStackTraceSymbolsTestBase : OakumTest {
         OakumInitArgs initArgsLocal{};
         initArgsLocal.trackStackTraces = true;
         EXPECT_OAKUM_SUCCESS(oakumInit(&initArgsLocal));
-        bool sourceLocationsSupported = isSourceLocationResolvingSupported();
+        bool sourceLocationsSupported = isSymbolLocationResolvingSupported();
         EXPECT_OAKUM_SUCCESS(oakumDeinit(true));
         if (sourceLocationsSupported != expectedSupport) {
             GTEST_SKIP();
