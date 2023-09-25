@@ -7,14 +7,6 @@
 
 using AcceptanceTest = OakumTest;
 
-#if OAKUM_SOURCE_LOCATIONS_AVAILABLE == 1
-using AcceptanceTestWithSourceLocations = AcceptanceTest;
-using AcceptanceTestWithoutSourceLocations = SkippedTest;
-#else
-using AcceptanceTestWithSourceLocations = SkippedTest;
-using AcceptanceTestWithoutSourceLocations = AcceptanceTest;
-#endif
-
 #if OAKUM_SYMBOLS_AVAILABLE == 1
 using AcceptanceTestWithSymbols = AcceptanceTest;
 #else
@@ -102,9 +94,14 @@ TEST_F(AcceptanceTestWithSymbols, givenSymbolsPresentResolvingSymbolsThenReturnC
     EXPECT_EQ(OAKUM_SUCCESS, oakumReleaseAllocations(allocations, allocationsCount));
 }
 
-TEST_F(AcceptanceTestWithSourceLocations, givenDebugConfigWhenResolvingSourceLocationsThenReturnLocations) {
+TEST_F(AcceptanceTest, givenSourceLocationsSupportedWhenResolvingSourceLocationsThenReturnLocations) {
     initArgs.trackStackTraces = true;
     EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
+
+    if (!isSourceLocationResolvingSupported()) {
+        EXPECT_OAKUM_SUCCESS(oakumDeinit(true));
+        GTEST_SKIP();
+    }
 
     auto memory = allocateMemoryFunction(13);
 
@@ -135,37 +132,21 @@ TEST_F(AcceptanceTestWithSourceLocations, givenDebugConfigWhenResolvingSourceLoc
     EXPECT_EQ(OAKUM_SUCCESS, oakumReleaseAllocations(allocations, allocationsCount));
 }
 
-TEST_F(AcceptanceTestWithoutSourceLocations, givenReleaseConfigWhenResolvingSourceLocationsThenReturnFallbackLocations) {
+TEST_F(AcceptanceTest, givenSourceLocationsUnsupportedWhenResolvingSourceLocationsThenReturnFallbackLocations) {
     initArgs.trackStackTraces = true;
-    initArgs.fallbackSourceFileName = "fallbackFile";
-    initArgs.fallbackSymbolName = "fallbackSymbol";
     EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
+
+    if (isSourceLocationResolvingSupported()) {
+        EXPECT_OAKUM_SUCCESS(oakumDeinit(true));
+        GTEST_SKIP();
+    }
 
     auto memory = allocateMemoryFunction(13);
 
     OakumAllocation *allocations{};
     size_t allocationsCount{};
     EXPECT_EQ(OAKUM_SUCCESS, oakumGetAllocations(&allocations, &allocationsCount));
-    EXPECT_EQ(OAKUM_SUCCESS, oakumResolveStackTraceSymbols(allocations, allocationsCount));
-    EXPECT_EQ(OAKUM_SUCCESS, oakumResolveStackTraceSourceLocations(allocations, allocationsCount));
-    OakumAllocation &allocation = allocations[0];
-    constexpr size_t minimumStackDepth = 6; // 1 main, 1 this test, 3 levels of allocating, 1 operator 'new' - must be at least 6.
-    EXPECT_LE(minimumStackDepth, allocation.stackFramesCount);
-
-    // Verify couple levels of allocation inside 'allocateMemoryFunction'.
-    for (size_t i = 0; i < allocateMemoryFunctionDepth; i++) {
-        OakumStackFrame &frame = allocation.stackFrames[i];
-        EXPECT_STREQ(initArgs.fallbackSourceFileName, frame.fileName);
-        EXPECT_EQ(0, frame.fileLine);
-    }
-
-    // Verify there are no nullptrs returned
-    for (size_t i = 0; i < allocation.stackFramesCount; i++) {
-        OakumStackFrame &frame = allocation.stackFrames[i];
-        EXPECT_NE(nullptr, frame.fileName);
-    }
-
-    memory.reset();
+    EXPECT_EQ(OAKUM_FEATURE_NOT_SUPPORTED, oakumResolveStackTraceSourceLocations(allocations, allocationsCount));
     EXPECT_EQ(OAKUM_SUCCESS, oakumReleaseAllocations(allocations, allocationsCount));
 }
 

@@ -11,7 +11,7 @@ struct OakumTest : ::testing::Test {
     void TearDown() override {
         if (oakumDetectLeaks() == OAKUM_LEAKS_DETECTED) {
             GTEST_NONFATAL_FAILURE_("Leaks detected at the end of test");
-#if 0
+#if 1
             // Enable this code to debug the leak
             OakumAllocation *allocations{};
             size_t allocationsCount = 0;
@@ -24,6 +24,12 @@ struct OakumTest : ::testing::Test {
         }
         const OakumResult deinitResult = oakumDeinit(false);
         EXPECT_TRUE(deinitResult == OAKUM_SUCCESS || deinitResult == OAKUM_UNINITIALIZED);
+    }
+
+    bool isSourceLocationResolvingSupported() {
+        OakumCapabilities capabilities = {};
+        EXPECT_OAKUM_SUCCESS(oakumGetCapabilities(&capabilities));
+        return capabilities.supportStackTracesSourceLocations;
     }
 
     OakumInitArgs initArgs = {};

@@ -23,18 +23,17 @@ TEST_F(OakumCapabilitiesTest, givenThreadSafetyRequestedWhenQueryingCapabilities
     EXPECT_TRUE(capabilities.threadSafe);
 }
 
-// TEST_F(OakumCapabilitiesTest, givenStackTracesRequestedWhenQueryingCapabilitiesThenReturnCapabilitiesWithStackTraceTrackingEnabled) {
-//     initArgs.trackStackTraces = true;
-//     EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
-//     OakumCapabilities capabilities = {};
-//     EXPECT_OAKUM_SUCCESS(oakumGetCapabilities(&capabilities));
+TEST_F(OakumCapabilitiesTest, givenStackTracesRequestedWhenQueryingCapabilitiesThenReturnCapabilitiesWithStackTraceTrackingEnabled) {
+    initArgs.trackStackTraces = true;
+    EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
+    OakumCapabilities capabilities = {};
+    EXPECT_OAKUM_SUCCESS(oakumGetCapabilities(&capabilities));
 
-//     //printf("XDDDDDD %d\n", OAKUM_SOURCE_LOCATIONS_AVAILABLE);
-//     EXPECT_TRUE(capabilities.supportStackTraces);
-// #if OAKUM_SOURCE_LOCATIONS_AVAILABLE == 1
-//     EXPECT_TRUE(capabilities.supportStackTracesSourceLocations);
-// #else
-//     EXPECT_FALSE(capabilities.supportStackTracesSourceLocations);
-// #endif
-//     EXPECT_FALSE(capabilities.threadSafe);
-// }
+    EXPECT_TRUE(capabilities.supportStackTraces);
+#if OAKUM_SOURCE_LOCATIONS_AVAILABLE == 1
+    EXPECT_TRUE(capabilities.supportStackTracesSourceLocations);
+#else
+    EXPECT_FALSE(capabilities.supportStackTracesSourceLocations);
+#endif
+    EXPECT_FALSE(capabilities.threadSafe);
+}
