@@ -2,6 +2,7 @@
 #include "oakum/oakum_api.h"
 #include "tests/common/allocate_memory_function.h"
 #include "tests/common/fixtures.h"
+#include <thread>
 
 using AcceptanceTest = OakumTestWithFallbackStrings;
 
@@ -148,6 +149,78 @@ TEST_F(AcceptanceTestWithoutSourceLocations, givenReleaseConfigWhenResolvingSour
 
     memory.reset();
     EXPECT_EQ(OAKUM_SUCCESS, oakumReleaseAllocations(allocations, allocationsCount));
+}
+
+TEST_F(AcceptanceTest, givenThreadSafeOakumWhenMultiThreadedAllocationsAreDoneThenCorrectlyDetectLeaks)
+{
+    ASSERT_TRUE(initArgs.threadSafe);
+
+    auto threadFunction = []()
+    {
+        constexpr size_t allocCount = 20;
+        std::unique_ptr<char[]> allocs[allocCount] = {};
+        for (size_t i = 0; i < allocCount; i++)
+        {
+            allocs[i] = allocateMemoryFunction();
+            EXPECT_EQ(OAKUM_LEAKS_DETECTED, oakumDetectLeaks());
+        }
+        for (size_t i = 0; i < allocCount; i++)
+        {
+            EXPECT_EQ(OAKUM_LEAKS_DETECTED, oakumDetectLeaks());
+            allocs[i].reset();
+        }
+    };
+
+    constexpr size_t threadCount = 4;
+    std::thread threads[threadCount] = {};
+    for (size_t i = 0; i < threadCount; i++)
+    {
+        threads[i] = std::thread{ threadFunction };
+    }
+    for (size_t i = 0; i < threadCount; i++)
+    {
+        threads[i].join();
+    }
+
+    EXPECT_EQ(OAKUM_SUCCESS, oakumDetectLeaks());
+}
+
+TEST_F(AcceptanceTest, givenThreadSafeOakumWhenMultiThreadedAllocationsAreDoneThenCorrectlyReturnLeaks)
+{
+    ASSERT_TRUE(initArgs.threadSafe);
+
+    auto threadFunction = []()
+    {
+        constexpr size_t allocCount = 20;
+        std::unique_ptr<char[]> allocs[allocCount] = {};
+        for (size_t i = 0; i < allocCount; i++)
+        {
+            allocs[i] = allocateMemoryFunction();
+
+            OakumAllocation* allocations{};
+            size_t allocationsCount{};
+            EXPECT_EQ(OAKUM_SUCCESS, oakumGetAllocations(&allocations, &allocationsCount));
+            EXPECT_LE(0u, allocationsCount);
+            EXPECT_EQ(OAKUM_SUCCESS, oakumReleaseAllocations(allocations, allocationsCount));
+        }
+        for (size_t i = 0; i < allocCount; i++)
+        {
+            allocs[i].reset();
+        }
+    };
+
+    constexpr size_t threadCount = 4;
+    std::thread threads[threadCount] = {};
+    for (size_t i = 0; i < threadCount; i++)
+    {
+        threads[i] = std::thread{ threadFunction };
+    }
+    for (size_t i = 0; i < threadCount; i++)
+    {
+        threads[i].join();
+    }
+
+    EXPECT_EQ(OAKUM_SUCCESS, oakumDetectLeaks());
 }
 
 int main(int argc, char **argv) {
