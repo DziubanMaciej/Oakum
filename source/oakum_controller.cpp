@@ -23,7 +23,7 @@ OakumController::OakumController(const OakumInitArgs &initArgs)
 OakumCapabilities OakumController::createCapabilities(const OakumInitArgs &initArgs) {
     OakumCapabilities capabilities{};
     capabilities.supportStackTraces = initArgs.trackStackTraces;
-    capabilities.supportStackTracesSourceLocations = initArgs.trackStackTraces && StackTraceHelper::supportsSourceLocations();
+    capabilities.supportStackTracesSourceLocations = initArgs.trackStackTraces && StackTraceHelper::supportsSourceLocations() && OAKUM_SOURCE_LOCATIONS_AVAILABLE == 1;
     capabilities.threadSafe = initArgs.threadSafe;
     return capabilities;
 }
