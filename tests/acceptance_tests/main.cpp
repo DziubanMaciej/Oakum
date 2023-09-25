@@ -7,12 +7,6 @@
 
 using AcceptanceTest = OakumTest;
 
-#if OAKUM_SYMBOLS_AVAILABLE == 1
-using AcceptanceTestWithSymbols = AcceptanceTest;
-#else
-using AcceptanceTestWithSymbols = SkippedTest;
-#endif
-
 // TODO: this could be wrong, but I've got no better idea right now...
 #ifdef NDEBUG
 constexpr bool operatorInlined = true;
@@ -55,11 +49,16 @@ TEST_F(AcceptanceTest, givenMemoryLeakWhenGettingAllocationThenReturnOneAllocati
     EXPECT_EQ(OAKUM_SUCCESS, oakumReleaseAllocations(allocations, allocationsCount));
 }
 
-TEST_F(AcceptanceTestWithSymbols, givenSymbolsPresentResolvingSymbolsThenReturnCorrectSymbols) {
+TEST_F(AcceptanceTest, givenSymbolResolvingSupportedWhenResolvingSymbolsThenReturnCorrectSymbols) {
     initArgs.trackStackTraces = true;
     initArgs.fallbackSymbolName = "fallbackSymbol";
     initArgs.fallbackSourceFileName = "fallbackFile";
     EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
+
+    if (!isSymbolLocationResolvingSupported()) {
+        EXPECT_OAKUM_SUCCESS(oakumDeinit(true));
+        GTEST_SKIP();
+    }
 
     auto memory = allocateMemoryFunction(13);
 
@@ -94,7 +93,25 @@ TEST_F(AcceptanceTestWithSymbols, givenSymbolsPresentResolvingSymbolsThenReturnC
     EXPECT_EQ(OAKUM_SUCCESS, oakumReleaseAllocations(allocations, allocationsCount));
 }
 
-TEST_F(AcceptanceTest, givenSourceLocationsSupportedWhenResolvingSourceLocationsThenReturnLocations) {
+TEST_F(AcceptanceTest, givenSymbolResolvingUnsupportedWhenResolvingSymbolsThenReturnFeatureUnsupported) {
+    initArgs.trackStackTraces = true;
+    EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
+
+    if (isSymbolLocationResolvingSupported()) {
+        EXPECT_OAKUM_SUCCESS(oakumDeinit(true));
+        GTEST_SKIP();
+    }
+
+    auto memory = allocateMemoryFunction(13);
+
+    OakumAllocation *allocations{};
+    size_t allocationsCount{};
+    EXPECT_EQ(OAKUM_SUCCESS, oakumGetAllocations(&allocations, &allocationsCount));
+    EXPECT_EQ(OAKUM_FEATURE_NOT_SUPPORTED, oakumResolveStackTraceSymbols(allocations, allocationsCount));
+    EXPECT_EQ(OAKUM_SUCCESS, oakumReleaseAllocations(allocations, allocationsCount));
+}
+
+TEST_F(AcceptanceTest, givenSourceLocationResolvingSupportedWhenResolvingSourceLocationsThenReturnLocations) {
     initArgs.trackStackTraces = true;
     EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
 
@@ -132,7 +149,7 @@ TEST_F(AcceptanceTest, givenSourceLocationsSupportedWhenResolvingSourceLocations
     EXPECT_EQ(OAKUM_SUCCESS, oakumReleaseAllocations(allocations, allocationsCount));
 }
 
-TEST_F(AcceptanceTest, givenSourceLocationsUnsupportedWhenResolvingSourceLocationsThenReturnFallbackLocations) {
+TEST_F(AcceptanceTest, givenSourceLocationResolvingUnsupportedWhenResolvingSourceLocationsThenReturnFeatureUnsupported) {
     initArgs.trackStackTraces = true;
     EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
 
@@ -150,7 +167,7 @@ TEST_F(AcceptanceTest, givenSourceLocationsUnsupportedWhenResolvingSourceLocatio
     EXPECT_EQ(OAKUM_SUCCESS, oakumReleaseAllocations(allocations, allocationsCount));
 }
 
-TEST_F(AcceptanceTest, givenThreadSafeOakumWhenMultiThreadedAllocationsAreDoneThenCorrectlyDetectLeaks) {
+TEST_F(AcceptanceTest, givenThreadSafeWhenMultiThreadedAllocationsAreDoneThenCorrectlyDetectLeaks) {
     initArgs.threadSafe = true;
     initArgs.trackStackTraces = true;
     EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
@@ -180,7 +197,7 @@ TEST_F(AcceptanceTest, givenThreadSafeOakumWhenMultiThreadedAllocationsAreDoneTh
     EXPECT_EQ(OAKUM_SUCCESS, oakumDetectLeaks());
 }
 
-TEST_F(AcceptanceTest, givenThreadSafeOakumWhenMultiThreadedAllocationsAreDoneThenCorrectlyReturnLeaks) {
+TEST_F(AcceptanceTest, givenThreadSafeWhenMultiThreadedAllocationsAreDoneThenCorrectlyReturnLeaks) {
     initArgs.threadSafe = true;
     initArgs.trackStackTraces = true;
     EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));

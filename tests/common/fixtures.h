@@ -31,6 +31,12 @@ struct OakumTest : ::testing::Test {
         return capabilities.supportStackTracesSourceLocations;
     }
 
+    bool isSymbolLocationResolvingSupported() {
+        OakumCapabilities capabilities = {};
+        EXPECT_OAKUM_SUCCESS(oakumGetCapabilities(&capabilities));
+        return capabilities.supportStackTracesSymbols;
+    }
+
     OakumInitArgs initArgs = {};
 };
 

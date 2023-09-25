@@ -24,6 +24,7 @@ OakumCapabilities OakumController::createCapabilities(const OakumInitArgs &initA
     OakumCapabilities capabilities{};
     capabilities.supportStackTraces = initArgs.trackStackTraces;
     capabilities.supportStackTracesSourceLocations = initArgs.trackStackTraces && StackTraceHelper::supportsSourceLocations() && OAKUM_SOURCE_LOCATIONS_AVAILABLE == 1;
+    capabilities.supportStackTracesSymbols = initArgs.trackStackTraces && OAKUM_SYMBOLS_AVAILABLE == 1;
     capabilities.threadSafe = initArgs.threadSafe;
     return capabilities;
 }
@@ -172,6 +173,7 @@ bool OakumController::hasAllocations() {
 
 bool OakumController::resolveStackTraceSymbols(OakumAllocation &allocation) {
     DEBUG_ERROR_IF(!this->capabilities.supportStackTraces, "resolveStackTraceSymbols even if stack trace tracking is disabled");
+    DEBUG_ERROR_IF(!this->capabilities.supportStackTracesSymbols, "resolveStackTraceSymbols even if symbol resolving is disabled");
     if (allocation.stackFramesCount != 0 && allocation.stackFrames[0].symbolName == nullptr) {
         return StackTraceHelper::resolveSymbols(allocation.stackFrames, allocation.stackFramesCount, fallbackSymbolName);
     }
@@ -179,8 +181,8 @@ bool OakumController::resolveStackTraceSymbols(OakumAllocation &allocation) {
 }
 
 bool OakumController::resolveStackTraceSourceLocations(OakumAllocation &allocation) {
-    DEBUG_ERROR_IF(!this->capabilities.supportStackTraces, "resolveStackTraceSymbols even if stack trace tracking is disabled");
-    DEBUG_ERROR_IF(!this->capabilities.supportStackTracesSourceLocations, "resolveStackTraceSymbols even if source locations resolving is disabled");
+    DEBUG_ERROR_IF(!this->capabilities.supportStackTraces, "resolveStackTraceSourceLocations even if stack trace tracking is disabled");
+    DEBUG_ERROR_IF(!this->capabilities.supportStackTracesSourceLocations, "resolveStackTraceSourceLocations even if source location resolving is disabled");
     if (allocation.stackFramesCount != 0 && allocation.stackFrames[0].fileName == nullptr) {
         return StackTraceHelper::resolveSourceLocations(allocation.stackFrames, allocation.stackFramesCount, fallbackSourceFileName);
     }

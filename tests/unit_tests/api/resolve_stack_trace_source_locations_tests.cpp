@@ -196,6 +196,7 @@ TEST_F(OakumResolveStackTraceSourceLocationsTest, givenNoStackTracesWhenCallingR
 }
 
 TEST_F(OakumResolveStackTraceSourceLocationsUnsupportedTest, givenSourceLocationsUnsupportedWhenResolvingSourceLocationsThenReturnFeatureUnsupported) {
+    initArgs.trackStackTraces = true;
     EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
 
     OakumAllocation *allocations = nullptr;

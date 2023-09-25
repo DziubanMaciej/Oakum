@@ -66,7 +66,7 @@ OakumResult oakumReleaseAllocations(OakumAllocation *allocations, size_t allocat
 OakumResult oakumResolveStackTraceSymbols(OakumAllocation *allocations, size_t allocationsCount) {
     OAKUM_VERIFY_INITIALIZATION(true, OAKUM_UNINITIALIZED);
     OAKUM_VERIFY((allocations == nullptr) != (allocationsCount == 0), OAKUM_INVALID_VALUE);
-    OAKUM_VERIFY(!Oakum::OakumController::getInstance()->getCapabilities().supportStackTraces, OAKUM_FEATURE_NOT_SUPPORTED);
+    OAKUM_VERIFY(!Oakum::OakumController::getInstance()->getCapabilities().supportStackTracesSymbols, OAKUM_FEATURE_NOT_SUPPORTED);
 
     for (size_t allocationIndex = 0; allocationIndex < allocationsCount; allocationIndex++) {
         const bool success = Oakum::OakumController::getInstance()->resolveStackTraceSymbols(allocations[allocationIndex]);

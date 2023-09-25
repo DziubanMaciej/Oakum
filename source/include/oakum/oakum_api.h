@@ -40,7 +40,10 @@ struct OakumCapabilities {
                                             ///< @details Stack trace tracking is enabled by the setting #OakumInitArgs.trackStackTraces to `true`.
     bool supportStackTracesSourceLocations; ///< @brief If set to `true`, the library is capable of retrieving source locations for stack traces.
                                             ///< @details This capability will never be active unless #supportStackTraces is also active.
-                                            ///< @details On some system Retrieving source locations of captured stack traces might not be supported, even if #supportStackTraces is enabled.
+                                            ///< @details On some configurations retrieving source locations of captured stack traces might not be possible, even if #supportStackTraces is enabled.
+    bool supportStackTracesSymbols;         ///< @brief If set to `true`, the library is capable of retrieving symbol names for stack traces.
+                                            ///< @details This capability will never be active unless #supportStackTraces is also active.
+                                            ///< @details On some configurations retrieving symbol names of captured stack traces might not be possible, even if #supportStackTraces is enabled.
     bool threadSafe;                        ///< @brief If set to `true`, the library is ensuring thread safety with locks.
                                             ///< @details Thread safety can be enabled/disabled by the user by setting #OakumInitArgs.threadSafe to a desired value.
 };
