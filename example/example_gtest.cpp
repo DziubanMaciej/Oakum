@@ -11,8 +11,9 @@ public:
 
     void OnTestStart(const ::testing::TestInfo &test_info) override {
         OakumInitArgs args{};
+        args.threadSafe = false;
+        args.sortAllocations = true;
         if (captureStackTraces) {
-            args.sortAllocations = true;
             args.trackStackTraces = true;
             args.fallbackSourceFileName = "<unknown_file>";
             args.fallbackSymbolName = "<unknown_symbol>";
