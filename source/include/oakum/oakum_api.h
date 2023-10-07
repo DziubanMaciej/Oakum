@@ -147,28 +147,28 @@ OakumResult oakumReleaseAllocations(OakumAllocation *allocations, size_t allocat
 
 /// @brief Fills human-readable symbol names in stack traces.
 /// @details This call will fill #OakumStackFrame.symbolName field for all stack frames.
-/// @details Sometimes it is not possible to resolve the symbol (e.g. when binary was compiled in Release configuration). For these cases the
-/// user can specify #OakumInitArgs.fallbackSymbolName, which will be used instead. This will also cause this function to not fail.
+/// @details Sometimes it may not possible to resolve the symbol (e.g. when binary was compiled in Release configuration). For these cases the
+/// user can specify #OakumInitArgs.fallbackSymbolName, which will be used instead.
 /// @param[in] allocations array of allocations to resolve symbols.
 /// @param[in] allocationsCount size of the @p allocations array.
 /// @return #OAKUM_UNINITIALIZED, if #oakumInit has not been called.
 /// @return #OAKUM_INVALID_VALUE, if @p allocations is `NULL` and @p allocationsCount is not zero.
 /// @return #OAKUM_INVALID_VALUE, if @p allocations is not `NULL` and @p allocationsCount is zero.
-/// @return #OAKUM_FEATURE_NOT_SUPPORTED, if the library is not tracking stack traces (see #OakumCapabilities).
+/// @return #OAKUM_FEATURE_NOT_SUPPORTED, if the library is not tracking stack traces or symbols are not available (see #OakumCapabilities).
 /// @return #OAKUM_RESOLVING_FAILED, if at least one symbol name could not be resolved and fallback name was not specified (see #OakumInitArgs).
 /// @return #OAKUM_SUCCESS otherwise.
 OakumResult oakumResolveStackTraceSymbols(OakumAllocation *allocations, size_t allocationsCount);
 
 /// @brief Fills source code locations in stack traces.
 /// @details This call will fill #OakumStackFrame.fileName and #OakumStackFrame.fileLine fields for all stack frames.
-/// @details Sometimes it is not possible to resolve the source locations (e.g. when binary was compiled in Release configuration). For these cases the
+/// @details Sometimes it may not possible to resolve the source locations (e.g. when binary was compiled in Release configuration). For these cases the
 /// user can specify #OakumInitArgs.fallbackSourceFileName, which will be used instead. This will also cause this function to not fail.
 /// @param[in] allocations array of allocations to resolve source locations.
 /// @param[in] allocationsCount size of the @p allocations array.
 /// @return #OAKUM_UNINITIALIZED, if #oakumInit has not been called.
 /// @return #OAKUM_INVALID_VALUE, if @p allocations is `NULL` and @p allocationsCount is not zero.
 /// @return #OAKUM_INVALID_VALUE, if @p allocations is not `NULL` and @p allocationsCount is zero.
-/// @return #OAKUM_FEATURE_NOT_SUPPORTED, if the library is not supporting source code locations querying (see #OakumCapabilities).
+/// @return #OAKUM_FEATURE_NOT_SUPPORTED, if the library is not tracking stack traces or source location are not available (see #OakumCapabilities).
 /// @return #OAKUM_RESOLVING_FAILED, if at least one source code location could not be resolved and fallback name was not specified (see #OakumInitArgs).
 /// @return #OAKUM_SUCCESS otherwise.
 OakumResult oakumResolveStackTraceSourceLocations(OakumAllocation *allocations, size_t allocationsCount);

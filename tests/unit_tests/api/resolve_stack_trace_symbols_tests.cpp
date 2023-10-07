@@ -5,7 +5,7 @@
 #define EXPECT_STR_CONTAINS(substring, string) EXPECT_NE(nullptr, strstr((string), (substring)))
 
 template <bool expectedSupport>
-struct OakumResolveStackTraceSymbolsTestBase : OakumTest {
+struct OakumResolveStackTraceSymbolsSupportedTestBase : OakumTest {
     void SetUp() override {
         OakumInitArgs initArgsLocal{};
         initArgsLocal.trackStackTraces = true;
@@ -18,14 +18,38 @@ struct OakumResolveStackTraceSymbolsTestBase : OakumTest {
     }
 };
 
-using OakumResolveStackTraceSymbolsTest = OakumResolveStackTraceSymbolsTestBase<true>;
-using OakumResolveStackTraceSymbolsUnsupportedTest = OakumResolveStackTraceSymbolsTestBase<false>;
+using OakumResolveStackTraceSymbolsTest = OakumTest;
+using OakumResolveStackTraceSymbolsSupportedTest = OakumResolveStackTraceSymbolsSupportedTestBase<true>;
+using OakumResolveStackTraceSymbolsUnsupportedTest = OakumResolveStackTraceSymbolsSupportedTestBase<false>;
 
-TEST_F(OakumResolveStackTraceSymbolsTest, givenOakumNotInitializedWhenCallingOakumResolveStackTraceSymbolsThenFail) {
+TEST_F(OakumResolveStackTraceSymbolsTest, givenStackTracesEnabledAndFallbackProvidedWhenResolvingStackTraceSymbolsThenNoSymbolIsNullptr) {
+    initArgs.trackStackTraces = true;
+    initArgs.fallbackSymbolName = "<fallback>";
+    EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
+
+    auto memory = allocateMemoryFunction();
+
+    OakumAllocation *allocations = nullptr;
+    size_t allocationCount = 0u;
+    EXPECT_OAKUM_SUCCESS(oakumGetAllocations(&allocations, &allocationCount));
+    EXPECT_NE(nullptr, allocations);
+    EXPECT_EQ(1u, allocationCount);
+
+    oakumResolveStackTraceSymbols(allocations, allocationCount);
+    OakumAllocation &allocation = allocations[0];
+    for (size_t i = 0; i < allocation.stackFramesCount; i++) {
+        OakumStackFrame &frame = allocation.stackFrames[i];
+        EXPECT_NE(nullptr, frame.symbolName);
+    }
+
+    EXPECT_OAKUM_SUCCESS(oakumReleaseAllocations(allocations, allocationCount));
+}
+
+TEST_F(OakumResolveStackTraceSymbolsSupportedTest, givenOakumNotInitializedWhenCallingOakumResolveStackTraceSymbolsThenFail) {
     EXPECT_EQ(OAKUM_UNINITIALIZED, oakumResolveStackTraceSymbols(nullptr, 0u));
 }
 
-TEST_F(OakumResolveStackTraceSymbolsTest, givenNullArgumentsWhenCallingOakumResolveStackTraceSymbolsThenReturnCorrectValues) {
+TEST_F(OakumResolveStackTraceSymbolsSupportedTest, givenNullArgumentsWhenCallingOakumResolveStackTraceSymbolsThenReturnCorrectValues) {
     initArgs.trackStackTraces = true;
     EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
 
@@ -34,7 +58,7 @@ TEST_F(OakumResolveStackTraceSymbolsTest, givenNullArgumentsWhenCallingOakumReso
     EXPECT_EQ(OAKUM_SUCCESS, oakumResolveStackTraceSymbols(nullptr, 0u));
 }
 
-TEST_F(OakumResolveStackTraceSymbolsTest, givenSymbolsResolvingSuccessWhenOakumResolveStackTraceSymbolsIsCalledThenReturnCorrectStackTrace) {
+TEST_F(OakumResolveStackTraceSymbolsSupportedTest, givenSymbolsResolvingSuccessWhenOakumResolveStackTraceSymbolsIsCalledThenReturnCorrectStackTrace) {
     initArgs.trackStackTraces = true;
     EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
 
@@ -55,7 +79,7 @@ TEST_F(OakumResolveStackTraceSymbolsTest, givenSymbolsResolvingSuccessWhenOakumR
     EXPECT_OAKUM_SUCCESS(oakumReleaseAllocations(allocations, allocationCount));
 }
 
-TEST_F(OakumResolveStackTraceSymbolsTest, givenSymbolsResolvingFailWhenOakumResolveStackTraceSymbolsIsCalledThenReturnError) {
+TEST_F(OakumResolveStackTraceSymbolsSupportedTest, givenSymbolsResolvingFailWhenOakumResolveStackTraceSymbolsIsCalledThenReturnError) {
     initArgs.trackStackTraces = true;
     EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
 
@@ -73,7 +97,7 @@ TEST_F(OakumResolveStackTraceSymbolsTest, givenSymbolsResolvingFailWhenOakumReso
     EXPECT_OAKUM_SUCCESS(oakumReleaseAllocations(allocations, allocationCount));
 }
 
-TEST_F(OakumResolveStackTraceSymbolsTest, givenSymbolsResolvingToNullptrWhenOakumResolveStackTraceSymbolsIsCalledThenReturnError) {
+TEST_F(OakumResolveStackTraceSymbolsSupportedTest, givenSymbolsResolvingToNullptrWhenOakumResolveStackTraceSymbolsIsCalledThenReturnError) {
     initArgs.trackStackTraces = true;
     EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
 
@@ -91,7 +115,7 @@ TEST_F(OakumResolveStackTraceSymbolsTest, givenSymbolsResolvingToNullptrWhenOaku
     EXPECT_OAKUM_SUCCESS(oakumReleaseAllocations(allocations, allocationCount));
 }
 
-TEST_F(OakumResolveStackTraceSymbolsTest, givenSymbolsResolvingSuccessAndFallbackSymbolIsPassWhenOakumResolveStackTraceSymbolsIsCalledThenUseResolvedSymbol) {
+TEST_F(OakumResolveStackTraceSymbolsSupportedTest, givenSymbolsResolvingSuccessAndFallbackSymbolIsPassWhenOakumResolveStackTraceSymbolsIsCalledThenUseResolvedSymbol) {
     initArgs.trackStackTraces = true;
     initArgs.fallbackSymbolName = "fallbackSymbol";
     EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
@@ -113,7 +137,7 @@ TEST_F(OakumResolveStackTraceSymbolsTest, givenSymbolsResolvingSuccessAndFallbac
     EXPECT_OAKUM_SUCCESS(oakumReleaseAllocations(allocations, allocationCount));
 }
 
-TEST_F(OakumResolveStackTraceSymbolsTest, givenSymbolsResolvingFailAndFallbackSymbolIsPassWhenOakumResolveStackTraceSymbolsIsCalledThenUseFallbackSymbol) {
+TEST_F(OakumResolveStackTraceSymbolsSupportedTest, givenSymbolsResolvingFailAndFallbackSymbolIsPassWhenOakumResolveStackTraceSymbolsIsCalledThenUseFallbackSymbol) {
     initArgs.trackStackTraces = true;
     initArgs.fallbackSymbolName = "fallbackSymbol";
     EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
@@ -135,7 +159,7 @@ TEST_F(OakumResolveStackTraceSymbolsTest, givenSymbolsResolvingFailAndFallbackSy
     EXPECT_OAKUM_SUCCESS(oakumReleaseAllocations(allocations, allocationCount));
 }
 
-TEST_F(OakumResolveStackTraceSymbolsTest, givenSymbolsResolvingToNullptrAndFallbackSymbolIsPassWhenOakumResolveStackTraceSymbolsIsCalledThenUseFallbackSymbol) {
+TEST_F(OakumResolveStackTraceSymbolsSupportedTest, givenSymbolsResolvingToNullptrAndFallbackSymbolIsPassWhenOakumResolveStackTraceSymbolsIsCalledThenUseFallbackSymbol) {
     initArgs.trackStackTraces = true;
     initArgs.fallbackSymbolName = "fallbackSymbol";
     EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
@@ -157,7 +181,7 @@ TEST_F(OakumResolveStackTraceSymbolsTest, givenSymbolsResolvingToNullptrAndFallb
     EXPECT_OAKUM_SUCCESS(oakumReleaseAllocations(allocations, allocationCount));
 }
 
-TEST_F(OakumResolveStackTraceSymbolsTest, givenSymbolsAlreadyResolvedWhenOakumResolveStackTraceSymbolsIsCalledThenReturnCorrectStackTrace) {
+TEST_F(OakumResolveStackTraceSymbolsSupportedTest, givenSymbolsAlreadyResolvedWhenOakumResolveStackTraceSymbolsIsCalledThenReturnCorrectStackTrace) {
     initArgs.trackStackTraces = true;
     EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
 
@@ -186,7 +210,7 @@ TEST_F(OakumResolveStackTraceSymbolsTest, givenSymbolsAlreadyResolvedWhenOakumRe
     EXPECT_OAKUM_SUCCESS(oakumReleaseAllocations(allocations, allocationCount));
 }
 
-TEST_F(OakumResolveStackTraceSymbolsTest, givenSourceLocationsResolvedWhenOakumResolveStackTraceSymbolsIsCalledThenReturnCorrectStackTrace) {
+TEST_F(OakumResolveStackTraceSymbolsSupportedTest, givenSourceLocationsResolvedWhenOakumResolveStackTraceSymbolsIsCalledThenReturnCorrectStackTrace) {
     initArgs.trackStackTraces = true;
     EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
 
@@ -218,7 +242,7 @@ TEST_F(OakumResolveStackTraceSymbolsTest, givenSourceLocationsResolvedWhenOakumR
     EXPECT_OAKUM_SUCCESS(oakumReleaseAllocations(allocations, allocationCount));
 }
 
-TEST_F(OakumResolveStackTraceSymbolsTest, givenNoStackTracesWhenCallingResolveStackTraceSymbolsThenReturnFeatureUnsupported) {
+TEST_F(OakumResolveStackTraceSymbolsSupportedTest, givenStackTracesNotEnabledWhenCallingResolveStackTraceSymbolsThenReturnFeatureUnsupported) {
     EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
 
     auto memory = allocateMemoryFunction();
@@ -234,11 +258,37 @@ TEST_F(OakumResolveStackTraceSymbolsTest, givenNoStackTracesWhenCallingResolveSt
     EXPECT_OAKUM_SUCCESS(oakumReleaseAllocations(allocations, allocationCount));
 }
 
-TEST_F(OakumResolveStackTraceSymbolsUnsupportedTest, givenSymbolsUnsupportedWhenResolvingSymbolsThenReturnFeatureUnsupported) {
+TEST_F(OakumResolveStackTraceSymbolsUnsupportedTest, givenStackTracesEnabledButSymbolsUnsupportedWhenResolvingSymbolsThenReturnResolvingFailed) {
     initArgs.trackStackTraces = true;
     EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
 
+    auto memory = allocateMemoryFunction();
+
     OakumAllocation *allocations = nullptr;
     size_t allocationCount = 0u;
-    EXPECT_EQ(OAKUM_FEATURE_NOT_SUPPORTED, oakumResolveStackTraceSymbols(allocations, allocationCount));
+    EXPECT_OAKUM_SUCCESS(oakumGetAllocations(&allocations, &allocationCount));
+    EXPECT_NE(nullptr, allocations);
+    EXPECT_EQ(1u, allocationCount);
+
+    EXPECT_EQ(OAKUM_RESOLVING_FAILED, oakumResolveStackTraceSymbols(allocations, allocationCount));
+
+    EXPECT_OAKUM_SUCCESS(oakumReleaseAllocations(allocations, allocationCount));
+}
+
+TEST_F(OakumResolveStackTraceSymbolsUnsupportedTest, givenStackTracesEnabledAndFallbackProvidedButSymbolsUnsupportedWhenResolvingSymbolsThenReturnSuccess) {
+    initArgs.trackStackTraces = true;
+    initArgs.fallbackSymbolName = "<fallback>";
+    EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
+
+    auto memory = allocateMemoryFunction();
+
+    OakumAllocation *allocations = nullptr;
+    size_t allocationCount = 0u;
+    EXPECT_OAKUM_SUCCESS(oakumGetAllocations(&allocations, &allocationCount));
+    EXPECT_NE(nullptr, allocations);
+    EXPECT_EQ(1u, allocationCount);
+
+    EXPECT_OAKUM_SUCCESS(oakumResolveStackTraceSymbols(allocations, allocationCount));
+
+    EXPECT_OAKUM_SUCCESS(oakumReleaseAllocations(allocations, allocationCount));
 }
