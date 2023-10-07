@@ -95,7 +95,7 @@ TEST_F(AcceptanceTest, givenSymbolResolvingSupportedWhenResolvingSymbolsThenRetu
 
 TEST_F(AcceptanceTest, givenStackTracesEnabledButSymbolResolvingUnsupportedWhenResolvingSymbolsThenReturnSuccess) {
     initArgs.trackStackTraces = true;
-    initArgs.fallbackSourceFileName = "<fallback>";
+    initArgs.fallbackSymbolName = "<fallback>";
     EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
 
     if (isSymbolLocationResolvingSupported()) {

@@ -277,7 +277,7 @@ TEST_F(OakumResolveStackTraceSymbolsUnsupportedTest, givenStackTracesEnabledButS
 
 TEST_F(OakumResolveStackTraceSymbolsUnsupportedTest, givenStackTracesEnabledAndFallbackProvidedButSymbolsUnsupportedWhenResolvingSymbolsThenReturnSuccess) {
     initArgs.trackStackTraces = true;
-    initArgs.fallbackSourceFileName = "<fallback>";
+    initArgs.fallbackSymbolName = "<fallback>";
     EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
 
     auto memory = allocateMemoryFunction();
