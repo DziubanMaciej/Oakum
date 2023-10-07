@@ -93,8 +93,9 @@ TEST_F(AcceptanceTest, givenSymbolResolvingSupportedWhenResolvingSymbolsThenRetu
     EXPECT_EQ(OAKUM_SUCCESS, oakumReleaseAllocations(allocations, allocationsCount));
 }
 
-TEST_F(AcceptanceTest, givenSymbolResolvingUnsupportedWhenResolvingSymbolsThenReturnFeatureUnsupported) {
+TEST_F(AcceptanceTest, givenStackTracesEnabledButSymbolResolvingUnsupportedWhenResolvingSymbolsThenReturnSuccess) {
     initArgs.trackStackTraces = true;
+    initArgs.fallbackSourceFileName = "<fallback>";
     EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
 
     if (isSymbolLocationResolvingSupported()) {
@@ -107,7 +108,7 @@ TEST_F(AcceptanceTest, givenSymbolResolvingUnsupportedWhenResolvingSymbolsThenRe
     OakumAllocation *allocations{};
     size_t allocationsCount{};
     EXPECT_EQ(OAKUM_SUCCESS, oakumGetAllocations(&allocations, &allocationsCount));
-    EXPECT_EQ(OAKUM_FEATURE_NOT_SUPPORTED, oakumResolveStackTraceSymbols(allocations, allocationsCount));
+    EXPECT_EQ(OAKUM_SUCCESS, oakumResolveStackTraceSymbols(allocations, allocationsCount));
     EXPECT_EQ(OAKUM_SUCCESS, oakumReleaseAllocations(allocations, allocationsCount));
 }
 
@@ -149,8 +150,9 @@ TEST_F(AcceptanceTest, givenSourceLocationResolvingSupportedWhenResolvingSourceL
     EXPECT_EQ(OAKUM_SUCCESS, oakumReleaseAllocations(allocations, allocationsCount));
 }
 
-TEST_F(AcceptanceTest, givenSourceLocationResolvingUnsupportedWhenResolvingSourceLocationsThenReturnFeatureUnsupported) {
+TEST_F(AcceptanceTest, givenStackTracesEnabledButSourceLocationResolvingUnsupportedWhenResolvingSourceLocationsThenReturnSuccess) {
     initArgs.trackStackTraces = true;
+    initArgs.fallbackSourceFileName = "<fallback>";
     EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
 
     if (isSourceLocationResolvingSupported()) {
@@ -163,7 +165,7 @@ TEST_F(AcceptanceTest, givenSourceLocationResolvingUnsupportedWhenResolvingSourc
     OakumAllocation *allocations{};
     size_t allocationsCount{};
     EXPECT_EQ(OAKUM_SUCCESS, oakumGetAllocations(&allocations, &allocationsCount));
-    EXPECT_EQ(OAKUM_FEATURE_NOT_SUPPORTED, oakumResolveStackTraceSourceLocations(allocations, allocationsCount));
+    EXPECT_EQ(OAKUM_SUCCESS, oakumResolveStackTraceSourceLocations(allocations, allocationsCount));
     EXPECT_EQ(OAKUM_SUCCESS, oakumReleaseAllocations(allocations, allocationsCount));
 }
 
