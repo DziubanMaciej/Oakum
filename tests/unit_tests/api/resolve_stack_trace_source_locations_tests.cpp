@@ -22,6 +22,29 @@ using OakumResolveStackTraceSourceLocationsTest = OakumTest;
 using OakumResolveStackTraceSourceLocationsSupportedTest = OakumResolveStackTraceSourceLocationsSupportedTestBase<true>;
 using OakumResolveStackTraceSourceLocationsUnsupportedTest = OakumResolveStackTraceSourceLocationsSupportedTestBase<false>;
 
+TEST_F(OakumResolveStackTraceSourceLocationsTest, givenStackTracesEnabledAndFallbackProvidedWhenResolvingSourceLocationsThenNoLocationIsNullptr) {
+    initArgs.trackStackTraces = true;
+    initArgs.fallbackSourceFileName = "<fallback>";
+    EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
+
+    auto memory = allocateMemoryFunction();
+
+    OakumAllocation *allocations = nullptr;
+    size_t allocationCount = 0u;
+    EXPECT_OAKUM_SUCCESS(oakumGetAllocations(&allocations, &allocationCount));
+    EXPECT_NE(nullptr, allocations);
+    EXPECT_EQ(1u, allocationCount);
+
+    oakumResolveStackTraceSourceLocations(allocations, allocationCount);
+    OakumAllocation &allocation = allocations[0];
+    for (size_t i = 0; i < allocation.stackFramesCount; i++) {
+        OakumStackFrame &frame = allocation.stackFrames[i];
+        EXPECT_NE(nullptr, frame.fileName);
+    }
+
+    EXPECT_OAKUM_SUCCESS(oakumReleaseAllocations(allocations, allocationCount));
+}
+
 TEST_F(OakumResolveStackTraceSourceLocationsSupportedTest, givenOakumNotInitializedWhenCallingOakumResolveStackTraceSourceLocationsThenFail) {
     EXPECT_EQ(OAKUM_UNINITIALIZED, oakumResolveStackTraceSourceLocations(nullptr, 0u));
 }
@@ -196,7 +219,7 @@ TEST_F(OakumResolveStackTraceSourceLocationsSupportedTest, givenStackTracesDisab
     EXPECT_OAKUM_SUCCESS(oakumReleaseAllocations(allocations, allocationCount));
 }
 
-TEST_F(OakumResolveStackTraceSourceLocationsUnsupportedTest, givenStackTracesEnabledButSourceLocationsUnsupportedWhenResolvingSourceLocationsThenReturnFeatureUnsupported) {
+TEST_F(OakumResolveStackTraceSourceLocationsUnsupportedTest, givenStackTracesEnabledButSourceLocationsUnsupportedWhenResolvingSourceLocationsThenReturnResolvingFailed) {
     initArgs.trackStackTraces = true;
     EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
 
@@ -208,12 +231,12 @@ TEST_F(OakumResolveStackTraceSourceLocationsUnsupportedTest, givenStackTracesEna
     EXPECT_NE(nullptr, allocations);
     EXPECT_EQ(1u, allocationCount);
 
-    EXPECT_OAKUM_SUCCESS(oakumResolveStackTraceSourceLocations(allocations, allocationCount));
+    EXPECT_EQ(OAKUM_RESOLVING_FAILED, oakumResolveStackTraceSourceLocations(allocations, allocationCount));
 
     EXPECT_OAKUM_SUCCESS(oakumReleaseAllocations(allocations, allocationCount));
 }
 
-TEST_F(OakumResolveStackTraceSourceLocationsTest, givenStackTracesEnabledAndFallbackProvidedWhenResolvingSourceLocationsThenNoLocationIsNullptr) {
+TEST_F(OakumResolveStackTraceSourceLocationsUnsupportedTest, givenStackTracesEnabledAndFallbackProvidedButSourceLocationsUnsupportedWhenResolvingSourceLocationsThenReturnSuccess) {
     initArgs.trackStackTraces = true;
     initArgs.fallbackSourceFileName = "<fallback>";
     EXPECT_OAKUM_SUCCESS(oakumInit(&initArgs));
@@ -226,12 +249,7 @@ TEST_F(OakumResolveStackTraceSourceLocationsTest, givenStackTracesEnabledAndFall
     EXPECT_NE(nullptr, allocations);
     EXPECT_EQ(1u, allocationCount);
 
-    oakumResolveStackTraceSourceLocations(allocations, allocationCount);
-    OakumAllocation &allocation = allocations[0];
-    for (size_t i = 0; i < allocation.stackFramesCount; i++) {
-        OakumStackFrame &frame = allocation.stackFrames[i];
-        EXPECT_NE(nullptr, frame.fileName);
-    }
+    EXPECT_OAKUM_SUCCESS(oakumResolveStackTraceSourceLocations(allocations, allocationCount));
 
     EXPECT_OAKUM_SUCCESS(oakumReleaseAllocations(allocations, allocationCount));
 }
